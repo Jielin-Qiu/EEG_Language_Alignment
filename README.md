@@ -1,6 +1,6 @@
 ## ECG_Language_Alignment
 
-An Empirical Exploration of Cross-domain Alignment between Language and Electroencephalogram <img src="icon.png" width="50" /> 
+An Empirical Exploration of Cross-domain Alignment between Language and Electroencephalogram 
 
 [William Han<sup>*</sup>](https://willxxy.github.io/), [Jielin Qiu<sup>*</sup>](https://www.cs.cmu.edu/~jielinq/), [Jiacheng Zhu](https://jiachengzhuml.github.io/), [Mengdi Xu](https://mxu34.github.io/), [Douglas Weber](https://www.meche.engineering.cmu.edu/directory/bios/weber-douglas.html), [Bo Li](https://aisecure.github.io/), [Ding Zhao](https://safeai-lab.github.io/)
 
