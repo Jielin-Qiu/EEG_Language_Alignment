@@ -1,6 +1,6 @@
 ## ECG_Language_Alignment
 
-An Empirical Exploration of Cross-domain Alignment between Language and Electroencephalogram 
+An Empirical Exploration of Cross-domain Alignment between Language and Electroencephalogram
 
 [William Han<sup>*</sup>](https://willxxy.github.io/), [Jielin Qiu<sup>*</sup>](https://www.cs.cmu.edu/~jielinq/), [Jiacheng Zhu](https://jiachengzhuml.github.io/), [Mengdi Xu](https://mxu34.github.io/), [Douglas Weber](https://www.meche.engineering.cmu.edu/directory/bios/weber-douglas.html), [Bo Li](https://aisecure.github.io/), [Ding Zhao](https://safeai-lab.github.io/)
 
@@ -87,7 +87,10 @@ The `plot.py` file is used for plotting TSNE, alignment, and brain topological f
 	bdsk-url-1 = {https://arxiv.org/abs/2208.06348}}
 ```
 
+### Reference
+
+This is the same codebase as in: https://github.com/willxxy/EEG_Text_alignment
+
 ### Contact
 
 If you have any question, please contact willhan327@outlook.com, jielinq@andrew.cmu.edu.
-
