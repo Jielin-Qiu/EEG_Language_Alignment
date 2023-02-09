@@ -2,9 +2,19 @@
 
 An Empirical Exploration of Cross-domain Alignment between Language and Electroencephalogram
 
-[William Han<sup>*</sup>](https://willxxy.github.io/), [Jielin Qiu<sup>*</sup>](https://www.cs.cmu.edu/~jielinq/), [Jiacheng Zhu](https://jiachengzhuml.github.io/), [Mengdi Xu](https://mxu34.github.io/), [Douglas Weber](https://www.meche.engineering.cmu.edu/directory/bios/weber-douglas.html), [Bo Li](https://aisecure.github.io/), [Ding Zhao](https://safeai-lab.github.io/)
+## Citation
 
-Under Review / [arxiv](https://arxiv.org/abs/2208.06348)
+If you feel our code or models helps in your research, kindly cite our papers:
+
+```
+@article{Han2022AnEE,
+  title={An Empirical Exploration of Cross-domain Alignment between Language and Electroencephalogram},
+  author={William Han and Jielin Qiu and Jiacheng Zhu and Mengdi Xu and Douglas Weber and Bo Li and Ding Zhao},
+  journal={ArXiv},
+  year={2022},
+  volume={abs/2208.06348}
+}
+```
 
 ## Usage
 
