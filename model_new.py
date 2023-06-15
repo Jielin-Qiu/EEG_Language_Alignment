@@ -4,7 +4,7 @@ from block_new import get_sinusoid_encoding_table, get_attn_key_pad_mask, get_no
     get_subsequent_mask, EncoderLayer, EncoderLayer2, EncoderLayer3
 from config import PAD, KS, Fea_PLUS
 import torch.nn.functional as F
-from CCA import cca_loss
+from EEG_Language_Alignment.loss import cca_loss
 from torch.nn.modules.batchnorm import BatchNorm1d
 
 
@@ -137,11 +137,6 @@ class Transformer(nn.Module):
 
         self.linear1_cov = nn.Conv1d(d_feature, 1, kernel_size=1)
         self.linear1_linear = nn.Linear(d_model, class_num)
-        self.linear2_cov = nn.Conv1d(d_model, 1, kernel_size=1)
-        self.linear2_linear = nn.Linear(d_feature, class_num)
-        self.bn=nn.BatchNorm1d(d_feature)
-        self.bn2=nn.BatchNorm1d(16) 
-        self.dropout = nn.Dropout(0.1)
 
     def forward(self, src_seq):
         b, l = src_seq.size()
@@ -174,11 +169,6 @@ class Transformer2(nn.Module):
 
         self.linear1_cov = nn.Conv1d(d_feature, 1, kernel_size=1)
         self.linear1_linear = nn.Linear(d_model, class_num)
-        self.linear2_cov = nn.Conv1d(d_model, 1, kernel_size=1)
-        self.linear2_linear = nn.Linear(d_feature, class_num)
-        self.bn=nn.BatchNorm1d(d_feature)
-        self.bn2=nn.BatchNorm1d(16) 
-        self.dropout = nn.Dropout(0.2)
 
     def forward(self, src_seq):
         b, l = src_seq.size()
@@ -351,8 +341,7 @@ class BiLSTM(nn.Module):
 
 class MLP(nn.Module):
   #vocab_size = 48, 32, 838
-    def __init__(self, vocab_size, embed_size = 1, hidden_size2 = 256, hidden_size3 = 128, hidden_size4 = 64, 
-    output_dim = class_num, dropout = 0.3, max_document_length = 32):
+    def __init__(self, vocab_size, output_dim, embed_size = 1, hidden_size2 = 256, hidden_size3 = 128, hidden_size4 = 64, dropout = 0.3, max_document_length = 32):
         super().__init__()
 
         self.relu = nn.ReLU()

@@ -12,6 +12,9 @@ PAD = 0
 KS = 3
 
 Fea_PLUS = 2
+SIG_LEN = 768
+SIG_LEN2 = 838
+SIG_LEN3 = 6
 
 '''
 # --- For K-EmoCon ternary

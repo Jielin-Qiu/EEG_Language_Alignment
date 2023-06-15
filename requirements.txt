@@ -39,7 +39,6 @@ tensorflow-metadata==1.9.0
 tensorflow-probability==0.16.0
 tokenizers==0.12.1
 toolz==0.12.0
-torch @ https://download.pytorch.org/whl/cu113/torch-1.12.1%2Bcu113-cp37-cp37m-linux_x86_64.whl
 torchaudio @ https://download.pytorch.org/whl/cu113/torchaudio-0.12.1%2Bcu113-cp37-cp37m-linux_x86_64.whl
 torchsummary==1.5.1
 torchtext==0.13.1

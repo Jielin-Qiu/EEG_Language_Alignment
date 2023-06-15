@@ -1,0 +1,7 @@
+data/
+*.zip
+*.pt
+*.chkpt
+*.ckpt
+*.csv
+*.mat

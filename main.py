@@ -19,7 +19,7 @@ from embeddings import get_embeddings
 
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
-from roc_new import plot_roc
+# from roc_new import plot_roc
 from imblearn.over_sampling import SMOTE
 import time
 import os
@@ -38,99 +38,6 @@ def get_args():
     parser.add_argument('--task', default ='SA', type=str, help="If dataset == Zuco, please choose a task from the following list: ['SA', 'RD']")
     parser.add_argument('--level', type=str, default = 'sentence', help="If ZuCo, please choose the level of EEG feature you want to work with from this list: ['word', 'concatword', 'sentence']")
     return parser.parse_args()
-
-def cal_loss(label, device, args, pred = None, pred2 = None, out = None ):
-
-    if (args.model == 'transformer') or (args.model == 'biLSTM') or (args.model == 'MLP') or (args.model == 'resnet'):
-        loss = F.cross_entropy(pred, label, reduction='sum')
-        pred = pred.max(1)[1]
-        n_correct = pred.eq(label).sum().item()
-
-        return loss, n_correct
-
-    if args.model == 'fusion':
-        loss = F.cross_entropy(out, label, reduction='sum')
-        out = out.max(1)[1]
-        n_correct = out.eq(label).sum().item()
-
-        return loss, n_correct
-
-    if args.model == 'CCA_fusion':
-        loss1 = model.loss
-        loss1 = loss1(pred, pred2)
-
-        loss2 = F.cross_entropy(out, label, reduction = 'sum')
-        loss = loss2 + loss1
-        out = out.max(1)[1]
-    
-        n_correct = out.eq(label).sum().item()
-        return loss, n_correct
-    
-    if args.model == 'WD_fusion':
-        loss1 = wasserstein_distance(pred.cpu().detach().numpy().flatten(), 
-        pred2.cpu().detach().numpy().flatten())
-
-        loss1 = torch.tensor(loss1, requires_grad=True)
-
-        loss2 = F.cross_entropy(out, label, reduction = 'sum')
-        loss = loss2 + loss1
-        out = out.max(1)[1]
-    
-        n_correct = out.eq(label).sum().item()
-        return loss, n_correct
-    
-    if (args.model == 'CCA_ds') and (args.modality == 'text'):
-        loss1 = F.cross_entropy(pred, label, reduction='sum')
-
-        loss2 = model1.loss
-        loss2 = loss2(pred, pred2)
-        loss = loss2+loss1
-        pred = pred.max(1)[1]
-
-        n_correct = pred.eq(label).sum().item()
-
-        return loss, n_correct
-
-    if (args.model == 'CCA_ds') and (args.modality == 'eeg'):
-        loss1 = F.cross_entropy(pred2, label, reduction='sum')
-
-        loss2 = model1.loss
-        loss2 = loss2(pred, pred2)
-        loss = loss2+loss1
-        pred = pred2.max(1)[1]
-
-        n_correct = pred2.eq(label).sum().item()
-
-        return loss, n_correct
-
-    if (args.model == 'WD_ds') and (args.modality == 'text'):
-        loss1 = F.cross_entropy(pred, label, reduction='sum')
-
-        loss2 = wasserstein_distance(pred.cpu().detach().numpy().flatten(), 
-        pred2.cpu().detach().numpy().flatten())
-        loss2 = torch.tensor(loss2, requires_grad=True)
-
-        loss = loss2+loss1
-        pred = pred.max(1)[1]
-
-        n_correct = pred.eq(label).sum().item()
-
-        return loss, n_correct
-
-    if (args.model == 'WD_ds') and (args.modality == 'eeg'):
-        loss1 = F.cross_entropy(pred2, label, reduction='sum')
-
-        loss2 = wasserstein_distance(pred.cpu().detach().numpy().flatten(), 
-        pred2.cpu().detach().numpy().flatten())
-        loss2 = torch.tensor(loss2, requires_grad=True)
-
-        loss = loss2+loss1
-        pred = pred2.max(1)[1]
-
-        n_correct = pred2.eq(label).sum().item()
-
-        return loss, n_correct
-
 
 def cal_statistic(cm):
     total_pred = cm.sum(0)
@@ -717,9 +624,9 @@ if __name__ == "__main__":
         if args.model == 'MLP':
             
             if args.modality == 'text':
-                model = MLP(vocab_size = SIG_LEN, device = device)
+                model = MLP(vocab_size = SIG_LEN,output_dim = class_num, device = device)
             if args.modality == 'eeg':
-                model = MLP(vocab_size = SIG_LEN2, device = device)
+                model = MLP(vocab_size = SIG_LEN2,output_dim = class_num, device = device)
 
         if args.model == 'resnet':
             
@@ -889,9 +796,9 @@ if __name__ == "__main__":
         if args.model == 'MLP':
             
             if args.modality == 'text':
-                model = MLP(vocab_size = SIG_LEN, device = device)
+                model = MLP(vocab_size = SIG_LEN, output_dim = class_num,device = device)
             if args.modality == 'eeg':
-                model = MLP(vocab_size = SIG_LEN2, device = device)
+                model = MLP(vocab_size = SIG_LEN2, output_dim = class_num,device = device)
 
         if args.model == 'resnet':
             
@@ -1061,9 +968,9 @@ if __name__ == "__main__":
         if args.model == 'MLP':
             
             if args.modality == 'text':
-                model = MLP(vocab_size = SIG_LEN, device = device)
+                model = MLP(vocab_size = SIG_LEN,output_dim = class_num, device = device)
             if args.modality == 'eeg':
-                model = MLP(vocab_size = SIG_LEN2, device = device)
+                model = MLP(vocab_size = SIG_LEN2, output_dim = class_num,device = device)
 
         if args.model == 'resnet':
             

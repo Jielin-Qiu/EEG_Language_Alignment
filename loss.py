@@ -3,9 +3,9 @@ from pandas._libs.tslibs.conversion import OutOfBoundsTimedelta
 import torch
 import torch.nn as nn
 from transformers.utils.dummy_pt_objects import MODEL_FOR_VISION_2_SEQ_MAPPING
-from model_new import Transformer, Transformer2, Transformer3
 from config import *
 import torch.nn.functional as F
+from scipy.stats import wasserstein_distance
 
 # --- Modified version of CCA loss function originally introduced by Galen Andrew et al. (2013) 
 # and re-implemented by https://github.com/Michaelvll/DeepCCA
@@ -79,3 +79,48 @@ class cca_loss():
         return -corr
 
 
+def cal_loss(label, args, pred=None, pred2=None, out=None):
+    loss = None
+    n_correct = None
+
+    if args.model in ['transformer', 'biLSTM', 'MLP', 'resnet']:
+        loss = F.cross_entropy(pred, label, reduction='sum')
+        pred = pred.max(1)[1]
+
+    elif args.model in ['fusion', 'CCA_fusion', 'WD_fusion']:
+        loss = F.cross_entropy(out, label, reduction='sum')
+        out = out.max(1)[1]
+
+    elif args.model == 'CCA_fusion':
+        loss = F.cross_entropy(out, label, reduction='sum')
+        loss += model.loss(pred, pred2)
+        out = out.max(1)[1]
+
+    elif args.model == 'WD_fusion':
+        loss = F.cross_entropy(out, label, reduction='sum')
+        loss += torch.tensor(wasserstein_distance(pred.cpu().detach().numpy().flatten(), pred2.cpu().detach().numpy().flatten()), requires_grad=True)
+        out = out.max(1)[1]
+
+    elif args.model == 'CCA_ds' and args.modality == 'text':
+        loss = F.cross_entropy(pred, label, reduction='sum')
+        loss += model1.loss(pred, pred2)
+        pred = pred.max(1)[1]
+
+    elif args.model == 'CCA_ds' and args.modality == 'eeg':
+        loss = F.cross_entropy(pred2, label, reduction='sum')
+        loss += model1.loss(pred, pred2)
+        pred = pred2.max(1)[1]
+
+    elif args.model == 'WD_ds' and args.modality == 'text':
+        loss = F.cross_entropy(pred, label, reduction='sum')
+        loss += torch.tensor(wasserstein_distance(pred.cpu().detach().numpy().flatten(), pred2.cpu().detach().numpy().flatten()), requires_grad=True)
+        pred = pred.max(1)[1]
+
+    elif args.model == 'WD_ds' and args.modality == 'eeg':
+        loss = F.cross_entropy(pred2, label, reduction='sum')
+        loss += torch.tensor(wasserstein_distance(pred.cpu().detach().numpy().flatten(), pred2.cpu().detach().numpy().flatten()), requires_grad=True)
+        pred = pred2.max(1)[1]
+
+    n_correct = pred.eq(label).sum().item()
+
+    return loss, n_correct
