@@ -9,8 +9,6 @@ from torch.nn.modules.batchnorm import BatchNorm1d
 
 
 class Encoder(nn.Module):
-
-
     def __init__(
             self,
             d_feature,
@@ -115,7 +113,7 @@ class Encoder3(nn.Module):
         enc_output.add_(self.position_enc(src_pos))
 
         for enc_layer in self.layer_stack:
-            enc_output, enc_slf_attn = enc_layer(
+            enc_output, _ = enc_layer(
                 enc_output,
                 non_pad_mask=non_pad_mask,
                 slf_attn_mask=slf_attn_mask)
