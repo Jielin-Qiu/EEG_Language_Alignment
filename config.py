@@ -1,3 +1,10 @@
+import torch
+
+if torch.cuda.is_available():
+    device = torch.device('cuda')
+else:
+    device = torch.device('cpu')
+    
 batch_size = 64
 d_model = 16
 num_layers = 1

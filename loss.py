@@ -78,6 +78,8 @@ class cca_loss():
             corr = torch.sum(torch.sqrt(U))
         return -corr
 
+cca = cca_loss(outdim_size, use_all_singular_values, device = device)
+
 
 def cal_loss(label, args, pred=None, pred2=None, out=None):
     loss = None
@@ -93,7 +95,7 @@ def cal_loss(label, args, pred=None, pred2=None, out=None):
 
     elif args.model == 'CCA_fusion':
         loss = F.cross_entropy(out, label, reduction='sum')
-        loss += model.loss(pred, pred2)
+        loss += cca.loss(pred, pred2)
         out = out.max(1)[1]
 
     elif args.model == 'WD_fusion':
@@ -103,12 +105,12 @@ def cal_loss(label, args, pred=None, pred2=None, out=None):
 
     elif args.model == 'CCA_ds' and args.modality == 'text':
         loss = F.cross_entropy(pred, label, reduction='sum')
-        loss += model1.loss(pred, pred2)
+        loss += cca.loss(pred, pred2)
         pred = pred.max(1)[1]
 
     elif args.model == 'CCA_ds' and args.modality == 'eeg':
         loss = F.cross_entropy(pred2, label, reduction='sum')
-        loss += model1.loss(pred, pred2)
+        loss += cca.loss(pred, pred2)
         pred = pred2.max(1)[1]
 
     elif args.model == 'WD_ds' and args.modality == 'text':
