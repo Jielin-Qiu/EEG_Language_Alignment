@@ -5,6 +5,7 @@ from block_new import get_sinusoid_encoding_table, get_attn_key_pad_mask, get_no
 from config import PAD, KS, Fea_PLUS
 import torch.nn.functional as F
 from EEG_Language_Alignment.loss import cca_loss
+from config import *
 from torch.nn.modules.batchnorm import BatchNorm1d
 
 
@@ -244,7 +245,7 @@ class DeepCCA(nn.Module):
 class DeepCCA_fusion(nn.Module):
     def __init__(self, model1, outdim_size, use_all_singular_values, d_feature, d_model, d_inner,
             n_layers, n_head, d_k=64, d_v=64, dropout = 0.5,
-            class_num=2, device=torch.device('cuda')):
+            class_num=2, device=device):
         super(DeepCCA_fusion, self).__init__()
         self.model1 = model1
         self.Transformer = Transformer3(device=device, d_feature=4, d_model=d_model, d_inner=d_inner,
