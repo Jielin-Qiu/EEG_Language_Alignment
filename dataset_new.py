@@ -4,7 +4,10 @@ from torch.utils.data import Dataset
 import torch.nn as nn
 from config import *
 import scipy.stats as stats
-
+import os
+import scipy.io as io
+import math
+from tqdm import tqdm
 
 class resnet_Text_EEGDataset(Dataset):
   def __init__(self, texts, signals, labels, tokenizer, max_len):
@@ -69,3 +72,155 @@ class Text_EEGDataset(Dataset):
     signal = self.signals[item]
     text = torch.FloatTensor(text)    
     return signal, text, torch.tensor(label, dtype=torch.long)
+  
+  
+def prepare_sr_eeg_data(sr_eeg_data_path, sentence_list, labels_list, sentence_ids_list):
+  
+  eeg_dict = {}
+  
+  for i in tqdm(os.listdir(sr_eeg_data_path), desc = 'Creating SR EEG dataset: '):
+      
+      file_path = os.path.join(sr_eeg_data_path,i)
+      
+      if file_path == 'data/SR/resultsZDN_SR.mat':
+        pass
+      
+      else:
+        
+        io_mat_file = io.loadmat(file_path, squeeze_me=True, struct_as_record=False)['sentenceData']
+
+        for j in range(len(io_mat_file)):
+          
+        
+          t1 = io_mat_file[j].mean_t1[:104]
+          t2 = io_mat_file[j].mean_t2[:104]
+          
+          a1 = io_mat_file[j].mean_a1[:104]
+          a2 = io_mat_file[j].mean_a2[:104]
+
+          g1 = io_mat_file[j].mean_g1[:104]
+          g2 = io_mat_file[j].mean_g2[:104]
+          
+          b1 = io_mat_file[j].mean_b1[:104]
+          b2 = io_mat_file[j].mean_b2[:104]
+          
+          nan_mask_t1 = np.isnan(t1)
+          nan_mask_t2 = np.isnan(t2)
+          
+          nan_mask_a1 = np.isnan(a1)
+          nan_mask_a2 = np.isnan(a2)
+          
+          nan_mask_b1 = np.isnan(b1)
+          nan_mask_b2 = np.isnan(b2)
+          
+          nan_mask_g1 = np.isnan(g1)
+          nan_mask_g2 = np.isnan(g2)
+          
+          if np.all(nan_mask_t1) or np.all(nan_mask_t2) or np.all(nan_mask_a1) or np.all(nan_mask_a2) \
+            or np.all(nan_mask_b1) or np.all(nan_mask_b2) or np.all(nan_mask_g1) or np.all(nan_mask_g2):
+
+            pass
+          
+          else:
+            t1[nan_mask_t1] = 0
+            t2[nan_mask_t2] = 0
+            
+            a1[nan_mask_a1] = 0
+            a2[nan_mask_a2] = 0
+            
+            b1[nan_mask_b1] = 0
+            b2[nan_mask_b2] = 0
+            
+            g1[nan_mask_g1] = 0
+            g2[nan_mask_g2] = 0
+            
+          
+            sentence = io_mat_file[j].content
+            
+            if sentence == 'Ultimately feels emp11111ty and unsatisfying, like swallowing a Communion wafer without the wine.':
+                sentence = 'Ultimately feels empty and unsatisfying, like swallowing a Communion wafer without the wine.'
+            elif sentence == "Bullock's complete lack of focus and ability quickly derails the film.1":
+                sentence =  "Bullock's complete lack of focus and ability quickly derails the film."
+            
+            sentence_idx = sentence_list.index(sentence)
+            
+            label = labels_list[sentence_idx]
+            
+            sentence_id = sentence_ids_list[sentence_idx]
+            
+            if sentence_id in eeg_dict:
+              
+              eeg_dict[sentence_id]['t1'].append(t1.tolist())
+              eeg_dict[sentence_id]['t2'].append(t2.tolist())
+              
+              eeg_dict[sentence_id]['a1'].append(a1.tolist())
+              eeg_dict[sentence_id]['a2'].append(a2.tolist())
+              
+              eeg_dict[sentence_id]['b1'].append(b1.tolist())
+              eeg_dict[sentence_id]['b2'].append(b2.tolist())
+              
+              eeg_dict[sentence_id]['g1'].append(g1.tolist())
+              eeg_dict[sentence_id]['g2'].append(g2.tolist())
+              
+              assert label == eeg_dict[sentence_id]['label']
+              
+              assert sentence == eeg_dict[sentence_id]['sentence']
+              
+            else:
+              
+                eeg_dict[sentence_id] = {
+                  'label' : label,
+                  'sentence' : sentence,
+                  't1' : [t1.tolist()],
+                  't2' : [t2.tolist()],
+                  'a1' : [a1.tolist()],
+                  'a2' : [a2.tolist()],
+                  'b1' : [b1.tolist()],
+                  'b2' : [b2.tolist()],
+                  'g1' : [g1.tolist()],
+                  'g2' : [g2.tolist()]
+                }
+                
+            assert (len(t1) == len(t2) == len(a1) == len(a2) == len(b1) \
+                == len(b2) == len(g1) == len(g2))
+              
+  for k in eeg_dict.keys():
+    
+    t1 = np.array(eeg_dict[k]['t1'], dtype=np.float32)
+    t2 = np.array(eeg_dict[k]['t2'], dtype=np.float32)
+    
+    a1 = np.array(eeg_dict[k]['a1'], dtype=np.float32)
+    a2 = np.array(eeg_dict[k]['a2'], dtype=np.float32)
+    
+    b1 = np.array(eeg_dict[k]['b1'], dtype=np.float32)
+    b2 = np.array(eeg_dict[k]['b2'], dtype=np.float32)
+    
+    g1 = np.array(eeg_dict[k]['g1'], dtype=np.float32)
+    g2 = np.array(eeg_dict[k]['g2'], dtype=np.float32)
+    
+    mean_t1 = np.mean(t1, axis=0)
+    mean_t2 = np.mean(t2, axis=0)
+    
+    mean_a1 = np.mean(a1, axis=0)
+    mean_a2 = np.mean(a2, axis=0)
+    
+    mean_b1 = np.mean(b1, axis=0)
+    mean_b2 = np.mean(b2, axis=0)
+    
+    mean_g1 = np.mean(g1, axis=0)
+    mean_g2 = np.mean(g2, axis=0)
+    
+    eeg_dict[k]['t1'] = mean_t1
+    eeg_dict[k]['t2'] = mean_t2
+    
+    eeg_dict[k]['a1'] = mean_a1
+    eeg_dict[k]['a2'] = mean_a2
+    
+    eeg_dict[k]['b1'] = mean_b1
+    eeg_dict[k]['b2'] = mean_b2
+    
+    eeg_dict[k]['g1'] = mean_g1
+    eeg_dict[k]['g2'] = mean_g2
+    
+    
+  return eeg_dict
