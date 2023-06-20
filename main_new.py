@@ -59,13 +59,18 @@ if __name__ == '__main__':
                 
                 eeg_dict = prepare_sr_eeg_data(sr_eeg_data_path, sentence_list, labels_list, sentence_ids_list)
                 
-                eeg_dict, id_mapping = clean_dic(eeg_dict)
+                eeg_train_split, eeg_val_split, eeg_test_split = shuffle_split_data(eeg_dict)
                 
-                train, val, test = shuffle_split_data(eeg_dict)
+                train, train_id_mapping = clean_dic(eeg_train_split)
+                val, val_id_mapping = clean_dic(eeg_val_split)
+                test, test_id_mapping = clean_dic(eeg_test_split)
+                
                 
                 train_dataset = EEGDataset(train)
                 val_dataset = EEGDataset(val)
                 test_dataset = EEGDataset(test)
+                
+                print(val_dataset.__getitem__(0)['sentence'].shape)
                 
                 train_loader = DataLoader(
                     dataset=train_dataset,

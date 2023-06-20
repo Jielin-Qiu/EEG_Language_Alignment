@@ -10,6 +10,7 @@ import math
 from tqdm import tqdm
 from scipy.stats import zscore
 import random
+from transformers import BertModel, BertTokenizer
 
 class resnet_Text_EEGDataset(Dataset):
   def __init__(self, texts, signals, labels, tokenizer, max_len):
@@ -231,15 +232,32 @@ def prepare_sr_eeg_data(sr_eeg_data_path, sentence_list, labels_list, sentence_i
 class EEGDataset(Dataset):
     def __init__(self, data):
         self.data = data
+        self.bert = BertModel.from_pretrained('bert-base-uncased')
+        self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 
     def __len__(self):
         return len(self.data)
-
+      
+    def __getembed__(self, text):
+      tokenized = self.tokenizer(text, padding=True, truncation=True, return_tensors='pt')
+      input_ids = tokenized['input_ids']
+      with torch.no_grad():
+          outputs = self.bert(input_ids)
+          embeddings = outputs.last_hidden_state.mean(dim=1).squeeze().numpy()
+      
+      embeddings = zscore(embeddings)
+      
+      assert embeddings.shape == (768,)
+      
+      return embeddings
+      
     def __getitem__(self, idx):
         item = self.data[idx]
+        embeddings = self.__getembed__(item['sentence'])
+        
         sample = {
             'label': item['label'],
-            'sentence': item['sentence'],
+            'sentence': embeddings,
             'a1': item['a1'],
             'a2': item['a2'],
             't1': item['t1'],
