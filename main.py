@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader, Dataset, WeightedRandomSampler
 from tqdm import tqdm
 import numpy as np
 import pandas as pd
-from model_new import *
+from EEG_Language_Alignment.model import *
 from optim_new import ScheduledOptim
 from dataset_new import *
 from config import *

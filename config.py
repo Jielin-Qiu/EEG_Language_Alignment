@@ -17,11 +17,13 @@ fea_num = 7
 epoch = 200
 PAD = 0
 KS = 3
+d_k = 64
+d_v = 64
 
 Fea_PLUS = 2
-SIG_LEN = 768
-SIG_LEN2 = 838
-SIG_LEN3 = 6
+EEG_LEN = 768
+TEXT_LEN = 832
+# SIG_LEN3 = 6
 
 '''
 # --- For K-EmoCon ternary

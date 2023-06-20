@@ -1,1 +1,1 @@
-CUDA_VISIBLE_DEVICES=0 python main_new.py --dataset ZuCo --task SA --level sentence
+CUDA_VISIBLE_DEVICES=0 python main_new.py --dataset ZuCo --task SA --level sentence --modality fusion --model transformer
