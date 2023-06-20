@@ -2,9 +2,11 @@ import os
 import argparse
 import pandas as pd
 import numpy as np
+import json
+from torch.utils.data import DataLoader
 
 from utils import open_file
-from dataset_new import prepare_sr_eeg_data
+from dataset_new import prepare_sr_eeg_data, EEGDataset, clean_dic, shuffle_split_data
 
 
 def get_args():
@@ -14,6 +16,8 @@ def get_args():
     parser.add_argument('--dataset', type=str, help="Please choose a dataset from the following list: ['KEmoCon', 'ZuCo']")
     parser.add_argument('--task', default ='SA', type=str, help="If dataset == Zuco, please choose a task from the following list: ['SA', 'RD']")
     parser.add_argument('--level', type=str, default = 'sentence', help="If ZuCo, please choose the level of EEG feature you want to work with from this list: ['word', 'concatword', 'sentence']")
+    parser.add_argument('--batch_size', type=int, default = 64)
+    
     return parser.parse_args()
 
 
@@ -54,6 +58,30 @@ if __name__ == '__main__':
                 sentence_ids_list = sentiment_labels.sentence_id.tolist()
                 
                 eeg_dict = prepare_sr_eeg_data(sr_eeg_data_path, sentence_list, labels_list, sentence_ids_list)
+                
+                eeg_dict, id_mapping = clean_dic(eeg_dict)
+                
+                train, val, test = shuffle_split_data(eeg_dict)
+                
+                train_dataset = EEGDataset(train)
+                val_dataset = EEGDataset(val)
+                test_dataset = EEGDataset(test)
+                
+                train_loader = DataLoader(
+                    dataset=train_dataset,
+                    batch_size=args.batch_size,
+                    shuffle=True,
+                )
+                val_loader = DataLoader(
+                    dataset=val_dataset,
+                    batch_size=args.batch_size,
+                    shuffle=False,
+                )
+                test_loader = DataLoader(
+                    dataset=test_dataset,
+                    batch_size=1,
+                    shuffle=False,
+                )
                 
                 
             

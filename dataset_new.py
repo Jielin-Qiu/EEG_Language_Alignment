@@ -8,6 +8,7 @@ import os
 import scipy.io as io
 import math
 from tqdm import tqdm
+import random
 
 class resnet_Text_EEGDataset(Dataset):
   def __init__(self, texts, signals, labels, tokenizer, max_len):
@@ -224,3 +225,77 @@ def prepare_sr_eeg_data(sr_eeg_data_path, sentence_list, labels_list, sentence_i
     
     
   return eeg_dict
+
+
+class EEGDataset(Dataset):
+    def __init__(self, data):
+        self.data = data
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        item = self.data[idx]
+        sample = {
+            'label': item['label'],
+            'sentence': item['sentence'],
+            'a1': item['a1'],
+            'a2': item['a2'],
+            't1': item['t1'],
+            't2': item['t2'],
+            'b1': item['b1'],
+            'b2': item['b2'],
+            'g1': item['g1'],
+            'g2': item['g2'],
+            'seq': np.concatenate([item['t1'], item['t2'], item['a1'], item['a2'], \
+              item['b1'], item['b2'], item['g1'], item['g2']])
+        }
+        assert sample['seq'].shape == (832,)
+
+        return sample
+
+
+def clean_dic(eeg_dict):
+  new_dict = {}
+  id_mapping = {}
+  count = 0
+
+  for key, value in tqdm(eeg_dict.items(), desc = 'Cleaning Dictionary: '):
+      new_key = count
+      id_mapping[key] = new_key
+      new_dict[new_key] = value
+      count += 1
+
+  # Print the new dictionary and ID mapping
+  
+  return new_dict, id_mapping
+
+def shuffle_split_data(eeg_dict):
+
+  # Shuffle the keys of the original dictionary
+  keys = list(eeg_dict.keys())
+  random.shuffle(keys)
+
+  # Calculate the proportions
+  total_instances = len(eeg_dict)
+  train_proportion = int(0.7 * total_instances)
+  val_proportion = int(0.15 * total_instances)
+
+  # Split the data dictionary
+  train_data = {}
+  val_data = {}
+  test_data = {}
+
+  # Iterate over the shuffled keys and distribute the instances
+  for i, key in tqdm(enumerate(keys), desc = 'Spltting Dictionary'):
+      value = eeg_dict[key]
+      if i < train_proportion:
+          train_data[key] = value
+      elif train_proportion <= i < train_proportion + val_proportion:
+          val_data[key] = value
+      else:
+          test_data[key] = value
+          
+  return train_data, val_data, test_data
+  
+  
