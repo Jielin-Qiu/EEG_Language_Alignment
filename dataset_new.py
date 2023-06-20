@@ -8,6 +8,7 @@ import os
 import scipy.io as io
 import math
 from tqdm import tqdm
+from scipy.stats import zscore
 import random
 
 class resnet_Text_EEGDataset(Dataset):
@@ -211,17 +212,17 @@ def prepare_sr_eeg_data(sr_eeg_data_path, sentence_list, labels_list, sentence_i
     mean_g1 = np.mean(g1, axis=0)
     mean_g2 = np.mean(g2, axis=0)
     
-    eeg_dict[k]['t1'] = mean_t1
-    eeg_dict[k]['t2'] = mean_t2
+    eeg_dict[k]['t1'] = zscore(mean_t1)
+    eeg_dict[k]['t2'] = zscore(mean_t2)
     
-    eeg_dict[k]['a1'] = mean_a1
-    eeg_dict[k]['a2'] = mean_a2
+    eeg_dict[k]['a1'] = zscore(mean_a1)
+    eeg_dict[k]['a2'] = zscore(mean_a2)
     
-    eeg_dict[k]['b1'] = mean_b1
-    eeg_dict[k]['b2'] = mean_b2
+    eeg_dict[k]['b1'] = zscore(mean_b1)
+    eeg_dict[k]['b2'] = zscore(mean_b2)
     
-    eeg_dict[k]['g1'] = mean_g1
-    eeg_dict[k]['g2'] = mean_g2
+    eeg_dict[k]['g1'] = zscore(mean_g1)
+    eeg_dict[k]['g2'] = zscore(mean_g2)
     
     
   return eeg_dict
