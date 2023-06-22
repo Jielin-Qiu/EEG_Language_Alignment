@@ -1,4 +1,4 @@
-## ECG_Language_Alignment
+## EEG_Language_Alignment
 
 An Empirical Exploration of Cross-domain Alignment between Language and Electroencephalogram
 
