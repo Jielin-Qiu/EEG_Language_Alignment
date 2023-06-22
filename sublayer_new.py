@@ -2,12 +2,11 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
-from config import SIG_LEN
 
 class MultiHeadAttention(nn.Module):
     ''' Multi-Head Attention module '''
 
-    def __init__(self, n_head, d_model, d_k, d_v, dropout=0.1):
+    def __init__(self, n_head, d_model, d_k, d_v, dropout, d_feature):
         super().__init__()
 
         self.n_head = n_head
@@ -21,7 +20,7 @@ class MultiHeadAttention(nn.Module):
         nn.init.normal_(self.w_ks.weight, mean=0, std=np.sqrt(2.0 / (d_model + d_k)))
         nn.init.normal_(self.w_vs.weight, mean=0, std=np.sqrt(2.0 / (d_model + d_v)))
 
-        self.attention = SDPAttention(temperature=np.power(d_k, 0.5))
+        self.attention = SDPAttention(temperature=np.power(d_k, 0.5), d_feature = d_feature)
         self.layer_norm = nn.LayerNorm(d_model)
 
         self.fc = nn.Linear(n_head * d_v, d_model)
@@ -58,6 +57,7 @@ class MultiHeadAttention(nn.Module):
         output = self.layer_norm(output + residual)
 
         return output, attn
+    
 
 # class MultiHeadAttention2(nn.Module):
 #     ''' Multi-Head Attention module '''
@@ -174,14 +174,15 @@ class MultiHeadAttention(nn.Module):
 class SDPAttention(nn.Module):
     ''' Scaled Dot-Product Attention '''
 
-    def __init__(self, temperature, attn_dropout=0.1):
+    def __init__(self, temperature, d_feature, attn_dropout=0.1):
         super().__init__()
         self.temperature = temperature
         self.dropout = nn.Dropout(attn_dropout)
 
         self.softmax = nn.Softmax(dim=0)
 
-        self.BN = nn.BatchNorm1d(SIG_LEN)
+
+        self.BN = nn.BatchNorm1d(d_feature)
 
     def forward(self, q, k, v, mask=None):
         attn = torch.bmm(q, k.transpose(1, 2))
@@ -192,7 +193,6 @@ class SDPAttention(nn.Module):
         if mask is not None:
 
             attn = attn.masked_fill(mask, 0)
-
 
         attn = self.BN(attn)
         attn = self.softmax(attn)

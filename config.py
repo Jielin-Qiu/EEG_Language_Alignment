@@ -1,10 +1,8 @@
 import torch
 
-if torch.cuda.is_available():
-    device = torch.device('cuda')
-else:
-    device = torch.device('cpu')
-    
+device = torch.device('cuda')
+# device = torch.device('cpu')
+
 batch_size = 64
 d_model = 16
 num_layers = 1
@@ -21,8 +19,8 @@ d_k = 64
 d_v = 64
 
 Fea_PLUS = 2
-EEG_LEN = 768
-TEXT_LEN = 832
+EEG_LEN = 832
+TEXT_LEN = 768
 # SIG_LEN3 = 6
 
 '''

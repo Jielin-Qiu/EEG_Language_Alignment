@@ -77,9 +77,11 @@ class Text_EEGDataset(Dataset):
     return signal, text, torch.tensor(label, dtype=torch.long)
   
   
-def prepare_sr_eeg_data(sr_eeg_data_path, sentence_list, labels_list, sentence_ids_list):
+def prepare_sr_eeg_data(sr_eeg_data_path, sentence_list, labels_list, sentence_ids_list, args):
   
   eeg_dict = {}
+  
+  count = 0
   
   for i in tqdm(os.listdir(sr_eeg_data_path), desc = 'Creating SR EEG dataset: '):
       
@@ -148,6 +150,8 @@ def prepare_sr_eeg_data(sr_eeg_data_path, sentence_list, labels_list, sentence_i
             sentence_idx = sentence_list.index(sentence)
             
             label = labels_list[sentence_idx]
+            if label == -1:
+              label = 2.0
             
             sentence_id = sentence_ids_list[sentence_idx]
             
@@ -186,7 +190,11 @@ def prepare_sr_eeg_data(sr_eeg_data_path, sentence_list, labels_list, sentence_i
                 
             assert (len(t1) == len(t2) == len(a1) == len(a2) == len(b1) \
                 == len(b2) == len(g1) == len(g2))
-              
+      if args.dev == True:
+        count +=1
+        if count == 1:
+          break  
+        
   for k in eeg_dict.keys():
     
     t1 = np.array(eeg_dict[k]['t1'], dtype=np.float32)
@@ -249,25 +257,25 @@ class EEGDataset(Dataset):
       
       assert embeddings.shape == (768,)
       
-      return embeddings
+      return torch.tensor(embeddings, dtype = torch.float32)
       
     def __getitem__(self, idx):
         item = self.data[idx]
         embeddings = self.__getembed__(item['sentence'])
         
         sample = {
-            'label': item['label'],
+            'label': torch.tensor(item['label'], dtype=torch.long),
             'sentence': embeddings,
-            'a1': item['a1'],
-            'a2': item['a2'],
-            't1': item['t1'],
-            't2': item['t2'],
-            'b1': item['b1'],
-            'b2': item['b2'],
-            'g1': item['g1'],
-            'g2': item['g2'],
-            'seq': np.concatenate([item['t1'], item['t2'], item['a1'], item['a2'], \
-              item['b1'], item['b2'], item['g1'], item['g2']])
+            # 'a1': item['a1'],
+            # 'a2': item['a2'],
+            # 't1': item['t1'],
+            # 't2': item['t2'],
+            # 'b1': item['b1'],
+            # 'b2': item['b2'],
+            # 'g1': item['g1'],
+            # 'g2': item['g2'],
+            'seq': torch.tensor(np.concatenate([item['t1'], item['t2'], item['a1'], item['a2'], \
+              item['b1'], item['b2'], item['g1'], item['g2']]), dtype=torch.float32)
         }
         assert sample['seq'].shape == (832,)
 

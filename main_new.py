@@ -9,14 +9,14 @@ import json
 from torch.utils.data import DataLoader
 import time
 
-from config import device, EEG_LEN, TEXT_LEN, d_model, d_inner, \
+from config import EEG_LEN, TEXT_LEN, d_model, d_inner, \
     num_layers, num_heads, d_k, d_v, class_num, dropout
 from optim_new import ScheduledOptim
 from trainer import train
-from model_new import Transformer
+from model_new import FusionTransformer, EEGTransformer, TextTransformer, Transformer
 from utils import open_file
 from dataset_new import prepare_sr_eeg_data, EEGDataset, clean_dic, shuffle_split_data
-
+torch.set_num_threads(2)
 
 def get_args():
     parser = argparse.ArgumentParser(description=None)
@@ -25,16 +25,16 @@ def get_args():
     parser.add_argument('--dataset', type=str, help="Please choose a dataset from the following list: ['KEmoCon', 'ZuCo']")
     parser.add_argument('--task', default ='SA', type=str, help="If dataset == Zuco, please choose a task from the following list: ['SA', 'RD']")
     parser.add_argument('--level', type=str, default = 'sentence', help="If ZuCo, please choose the level of EEG feature you want to work with from this list: ['word', 'concatword', 'sentence']")
-    parser.add_argument('--batch_size', type=int, default = 64)
+    parser.add_argument('--batch_size', type=int, default = 16)
     parser.add_argument('--text_feature_len', type = int, default = 768)
     parser.add_argument('--eeg_feature_len', type = int, default = 832)
     parser.add_argument('--lr', type = float, default = 1e-5)
-    parser.add_argument('--eps', type = float, defaeult = 1e-4)
+    parser.add_argument('--eps', type = float, default = 1e-4)
     parser.add_argument('--weight_decay', type = float, default = 1e-2)
     parser.add_argument('--warm_steps', type = int, default = 2000)
     parser.add_argument('--epochs', type = int, default = 200)
-    
-    
+    parser.add_argument('--dev', type = bool, default = False)
+    parser.add_argument('--device', type = str, default = 'cuda')
     
     return parser.parse_args()
 
@@ -43,6 +43,8 @@ if __name__ == '__main__':
     
     args = get_args()
     os.environ['TOKENIZERS_PARALLELISM'] = 'false'
+    device = torch.device(args.device)
+    print(device)
     
     if args.dataset == 'KEmoCon':
         ###### COMING SOON #####
@@ -66,7 +68,7 @@ if __name__ == '__main__':
                 pass      
             
             else:
-                # Load clean csv
+                # Load csv
                 sentiment_labels = pd.read_csv('data/sentiment_labels_clean.csv')
                 
                 sr_eeg_data_path = 'data/SR'
@@ -75,18 +77,18 @@ if __name__ == '__main__':
                 labels_list = sentiment_labels.sentiment_label.tolist()
                 sentence_ids_list = sentiment_labels.sentence_id.tolist()
                 
-                eeg_dict = prepare_sr_eeg_data(sr_eeg_data_path, sentence_list, labels_list, sentence_ids_list)
+                eeg_dict = prepare_sr_eeg_data(sr_eeg_data_path, sentence_list, labels_list, sentence_ids_list, args)
                 
                 eeg_train_split, eeg_val_split, eeg_test_split = shuffle_split_data(eeg_dict)
                 
-                train, train_id_mapping = clean_dic(eeg_train_split)
-                val, val_id_mapping = clean_dic(eeg_val_split)
-                test, test_id_mapping = clean_dic(eeg_test_split)
+                train_set, train_id_mapping = clean_dic(eeg_train_split)
+                val_set, val_id_mapping = clean_dic(eeg_val_split)
+                test_set, test_id_mapping = clean_dic(eeg_test_split)
                 
                 
-                train_dataset = EEGDataset(train)
-                val_dataset = EEGDataset(val)
-                test_dataset = EEGDataset(test)
+                train_dataset = EEGDataset(train_set)
+                val_dataset = EEGDataset(val_set)
+                test_dataset = EEGDataset(test_set)
                                 
                 train_loader = DataLoader(
                     dataset=train_dataset,
@@ -104,18 +106,36 @@ if __name__ == '__main__':
                     shuffle=False,
                 )
                 
+                # if args.model == 'transformer' and args.modality == 'fusion':
+                #     model = FusionTransformer(device = device, d_feature_text = TEXT_LEN, d_feature_eeg = EEG_LEN,\
+                #                             d_model = d_model, d_inner = d_inner, n_layers = num_layers, \
+                #                             n_head=num_heads, d_k = d_k, d_v = d_v, dropout= dropout, \
+                #                             class_num = class_num, args = args)
+                    
+                # elif args.model == 'transformer' and args.modality == 'text':
+                #     model = TextTransformer(device = device, d_feature_text = TEXT_LEN,\
+                #                             d_model = d_model, d_inner = d_inner, n_layers = num_layers, \
+                #                             n_head=num_heads, d_k = d_k, d_v = d_v, dropout= dropout, \
+                #                             class_num = class_num, args = args)
+                    
+                # elif args.model == 'transformer' and args.modality == 'eeg':
+                #     print('hello')
+                #     model = EEGTransformer(device = device, d_feature_eeg = EEG_LEN,\
+                #                             d_model = d_model, d_inner = d_inner, n_layers = num_layers, \
+                #                             n_head=num_heads, d_k = d_k, d_v = d_v, dropout= dropout, \
+                #                             class_num = class_num, args = args)
+                
                 if args.model == 'transformer':
                     model = Transformer(device = device, d_feature_text = TEXT_LEN, d_feature_eeg = EEG_LEN,\
                                             d_model = d_model, d_inner = d_inner, n_layers = num_layers, \
                                             n_head=num_heads, d_k = d_k, d_v = d_v, dropout= dropout, \
                                             class_num = class_num, args = args)
-                    model = nn.DataParallel(model)
-                    model = model.to(device)
+                model = model.to(device)
                     
                 optimizer = ScheduledOptim(
                     Adam(filter(lambda x: x.requires_grad, model.parameters()), 
                          betas = (0.9, 0.98), eps = args.eps, lr = args.lr, weight_decay = args.weight_decay),
-                    d_model = d_model, warm_steps = args.warm_steps
+                    d_model = d_model, n_warmup_steps = args.warm_steps
                 )
                 
                 all_train_loss, all_train_acc = [], []
