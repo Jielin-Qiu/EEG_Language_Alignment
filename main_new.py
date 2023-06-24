@@ -167,7 +167,7 @@ if __name__ == '__main__':
                     }
                     
                     if eva_indi >= max(eva_indices):
-                        torch.save(checkpoint, f'baselines/{args.model}_{args.modality}_{args.level}_{num_layers}_{num_heads}.chkpt')
+                        torch.save(checkpoint, f'baselines/{args.model}_{args.modality}_{args.level}_{num_layers}_{num_heads}_{args.batch_size}.chkpt')
                         print('    - [Info] The checkpoint file has been updated.')
                         
                     early_stop = early_stopping(all_val_loss, patience = 5, delta = 0.01)

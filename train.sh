@@ -1,1 +1,1 @@
-CUDA_VISIBLE_DEVICES=0 python main_new.py --dataset ZuCo --task SA --level sentence --modality eeg --model transformer --batch_size 64
+CUDA_VISIBLE_DEVICES=1 python main_new.py --dataset ZuCo --task SA --level sentence --modality fusion --model transformer --batch_size 16
