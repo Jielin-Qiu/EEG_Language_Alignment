@@ -58,8 +58,8 @@ def train(train_loader, device, model, optimizer, total_num, args):
 
             total_loss += loss.item()
             total_correct += n_correct
-            cm = confusion_matrix(all_labels, all_res)
             
+    cm = confusion_matrix(all_labels, all_res)        
     train_loss = total_loss / total_num
     train_acc = total_correct / total_num
     return train_loss, train_acc, cm, all_pred, all_labels

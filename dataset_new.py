@@ -190,10 +190,9 @@ def prepare_sr_eeg_data(sr_eeg_data_path, sentence_list, labels_list, sentence_i
                 
             assert (len(t1) == len(t2) == len(a1) == len(a2) == len(b1) \
                 == len(b2) == len(g1) == len(g2))
-      if args.dev == True:
-        count +=1
-        if count == 1:
-          break  
+      count +=1
+      # if count == 1:
+      #   break  
         
   for k in eeg_dict.keys():
     

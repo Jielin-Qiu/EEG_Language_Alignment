@@ -30,3 +30,16 @@ class ScheduledOptim():
 
         for param_group in self._optimizer.param_groups:
             param_group['lr'] = lr
+
+
+def early_stopping(validation_losses, patience=5, delta=0):
+    if len(validation_losses) < patience + 1:
+        return False
+    
+    best_loss = min(validation_losses[:-patience])
+    current_loss = validation_losses[-1]
+    
+    if current_loss > best_loss + delta:
+        return True
+    
+    return False

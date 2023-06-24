@@ -6,7 +6,7 @@ from tqdm import tqdm
 import numpy as np
 
 
-def eval_raw(valid_loader, device, model, total_num, args):
+def eval(valid_loader, device, model, total_num, args):
     all_labels = []
     all_res = []
     all_pred = []
@@ -15,38 +15,63 @@ def eval_raw(valid_loader, device, model, total_num, args):
     total_correct = 0
     with torch.no_grad():
         for batch in tqdm(valid_loader, mininterval=100, desc='- (Validation)  ', leave=False):
-            sig2, sig, label, = map(lambda x: x.to(device), batch)
-
+            
             if args.modality == 'text':
-                pred = model(sig)
+                text, label = batch['sentence'].to(device), batch['label'].to(device)
+            elif args.modality == 'eeg':
+                eeg, label = batch['seq'].to(device), batch['label'].to(device)
+            else:
+                text, eeg, label = batch['sentence'].to(device), batch['seq'].to(device), batch['label'].to(device)
+            
+            if args.modality == 'text':
+                pred_text = model(text_src_seq = text)
                 all_labels.extend(label.cpu().numpy())
-                all_res.extend(pred.max(1)[1].cpu().numpy())
-                all_pred.extend(pred.cpu().detach().numpy())
-                loss, n_correct = cal_loss(label, device, args, pred = pred)
+                all_res.extend(pred_text.max(1)[1].cpu().numpy())
+                all_pred.extend(pred_text.cpu().detach().numpy())
+                loss, n_correct = cal_loss(label, args, pred = pred_text)
 
                 total_loss += loss.item()
                 total_correct += n_correct
 
-            if args.modality == 'eeg':
-                pred = model(sig2)
+            elif args.modality == 'eeg':
+                pred_eeg = model(eeg_src_seq = eeg)
                 all_labels.extend(label.cpu().numpy())
-                all_res.extend(pred.max(1)[1].cpu().numpy())
-                all_pred.extend(pred.cpu().detach().numpy())
-                loss, n_correct = cal_loss(label, device, args, pred = pred)
+                all_res.extend(pred_eeg.max(1)[1].cpu().numpy())
+                all_pred.extend(pred_eeg.cpu().detach().numpy())
+                loss, n_correct = cal_loss(label, args, pred = pred_eeg)
 
                 total_loss += loss.item()
                 total_correct += n_correct
+            else:
+                pred = model(eeg_src_seq = eeg, text_src_seq = text)
+                all_labels.extend(label.cpu().numpy())
+                all_res.extend(pred.max(1)[1].cpu().numpy())
+                loss, n_correct = cal_loss(label, args, pred = pred)
+                all_pred.extend(pred.cpu().detach().numpy())
 
+                total_loss += loss.item()
+                total_correct += n_correct
+                
     cm = confusion_matrix(all_labels, all_res)
     acc_SP, pre_i, rec_i, F1_i = cal_statistic(cm)
     print('acc_SP is : {acc_SP}'.format(acc_SP=acc_SP))
-    print('pre_i is : {pre_i}'.format(pre_i=pre_i))
-    print('rec_i is : {rec_i}'.format(rec_i=rec_i))
-    print('F1_i is : {F1_i}'.format(F1_i=F1_i))
+    print('pre_i is : {pre_i}'.format(pre_i=calculate_average(pre_i)))
+    print('rec_i is : {rec_i}'.format(rec_i=calculate_average(rec_i)))
+    print('F1_i is : {F1_i}'.format(F1_i=calculate_average(F1_i)))
     valid_loss = total_loss / total_num
     valid_acc = total_correct / total_num
+    print(f'Validation Loss: {valid_loss}')
+    print(f'Validation Accuracy: {valid_acc}')
     return valid_loss, valid_acc, cm, sum(rec_i[1:]) * 0.6 + sum(pre_i[1:]) * 0.4, all_pred, all_labels
 
+
+def calculate_average(numbers):
+    if len(numbers) == 0:
+        return 0  # Return 0 if the list is empty to avoid division by zero error
+    
+    total = sum(numbers)
+    average = total / len(numbers)
+    return average
 
 def eval_fusion(valid_loader1, device, model, total_num, args):
     model.eval()

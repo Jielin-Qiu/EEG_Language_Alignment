@@ -5,8 +5,8 @@ device = torch.device('cuda')
 
 batch_size = 64
 d_model = 16
-num_layers = 1
-num_heads = 2
+num_layers = 6
+num_heads = 6
 class_num = 3
 d_inner = 32
 dropout = 0.3
