@@ -96,10 +96,13 @@ class Transformer(nn.Module):
         else:
             self.text_encoder = TextEncoder(d_feature_text, n_layers, n_head, d_k, d_v, d_model, d_inner, dropout)
             self.eeg_encoder = EEGEncoder(d_feature_eeg, n_layers, n_head, d_k, d_v, d_model, d_inner, dropout)
-            projection_dim = 256  
-            self.text_projection = nn.Linear(d_feature_text * d_model, projection_dim)
-            self.eeg_projection = nn.Linear(d_feature_eeg * d_model, projection_dim)
+            # projection_dim = 256  
+            # self.text_projection = nn.Linear(d_feature_text * d_model, projection_dim)
+            # self.eeg_projection = nn.Linear(d_feature_eeg * d_model, projection_dim)
             self.linear1_cov_fusion = nn.Conv1d(d_feature_text + d_feature_eeg, 1, kernel_size = 1)
+            self.text_projection = nn.Conv1d(d_feature_text, 1, kernel_size = 1)
+            self.eeg_projection = nn.Conv1d(d_feature_eeg, 1, kernel_size = 1)
+            # self.l2_regularization = 0.01
             
             
         self.device = device
@@ -144,10 +147,16 @@ class Transformer(nn.Module):
 
             enc_output_text, *_ = self.text_encoder(text_src_seq, src_pos_text)
             enc_output_eeg, *_ = self.eeg_encoder(eeg_src_seq, src_pos_eeg)   
-            text_embed = enc_output_text.view(64, -1)  
-            eeg_embed = enc_output_eeg.view(64, -1)
-            projected_text = self.text_projection(text_embed)
-            projected_eeg = self.eeg_projection(eeg_embed)
+            # text_embed = enc_output_text.view(64, -1)  
+            # eeg_embed = enc_output_eeg.view(64, -1)
+            projected_text = self.text_projection(enc_output_text)
+            projected_eeg = self.eeg_projection(enc_output_eeg)
+            
+            # text_regularization_loss = self.l2_regularization * torch.norm(self.text_projection.weight) ** 2
+            # eeg_regularization_loss = self.l2_regularization * torch.norm(self.eeg_projection.weight) ** 2
+            
+            # reg_eeg = projected_eeg + eeg_regularization_loss
+            # reg_text = projected_text + text_regularization_loss
             
             concat_enc = torch.cat((enc_output_text, enc_output_eeg), dim = 1)
             
@@ -155,6 +164,11 @@ class Transformer(nn.Module):
             res = res.contiguous().view(res.size()[0], -1)
             res = self.linear1_linear(res)
             
+            # print(reg_eeg.shape)
+            # print(reg_text.shape)
+            # FOR CCA
+            projected_text = torch.squeeze(projected_text, dim=1)
+            projected_eeg = torch.squeeze(projected_eeg, dim=1)
             return res, projected_eeg, projected_text
 
 

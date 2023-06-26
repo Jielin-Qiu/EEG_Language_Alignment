@@ -42,8 +42,11 @@ class cca_loss():
         SigmaHat22 = (1.0 / (m - 1)) * torch.matmul(H2bar,
                                                     H2bar.t()) + r2 * torch.eye(o2, device=self.device)
 
-        [D1, V1] = torch.symeig(SigmaHat11, eigenvectors=True)
-        [D2, V2] = torch.symeig(SigmaHat22, eigenvectors=True)
+        # [D1, V1] = torch.symeig(SigmaHat11, eigenvectors=True)
+        # [D2, V2] = torch.symeig(SigmaHat22, eigenvectors=True)
+        
+        [D1, V1] = torch.eig(SigmaHat11, eigenvectors=True)
+        [D2, V2] = torch.eig(SigmaHat22, eigenvectors=True)
 
 
         posInd1 = torch.gt(D1, eps).nonzero()[:, 0]
@@ -92,6 +95,8 @@ def cal_loss(label, args, pred=None, text_embed=None, eeg_embed=None):
     if args.loss == 'CE':
         return loss, n_correct
     elif args.loss == 'CCA':
+        print(text_embed.shape)
+        print(eeg_embed.shape)
         loss += cca.loss(text_embed, eeg_embed)
         return loss, n_correct
     elif args.loss == 'WD':
