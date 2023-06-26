@@ -6,3 +6,4 @@ data/
 *.csv
 *.mat
 pred_labels/
+notes.txt
