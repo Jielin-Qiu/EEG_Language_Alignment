@@ -11,6 +11,8 @@ from tqdm import tqdm
 from scipy.stats import zscore
 import random
 from transformers import BertModel, BertTokenizer
+from collections import defaultdict
+
 
 class resnet_Text_EEGDataset(Dataset):
   def __init__(self, texts, signals, labels, tokenizer, max_len):
@@ -191,8 +193,9 @@ def prepare_sr_eeg_data(sr_eeg_data_path, sentence_list, labels_list, sentence_i
             assert (len(t1) == len(t2) == len(a1) == len(a2) == len(b1) \
                 == len(b2) == len(g1) == len(g2))
       count +=1
-      # if count == 1:
-      #   break  
+      if args.dev == 1:
+        if count == 1:
+          break  
         
   for k in eeg_dict.keys():
     
@@ -297,31 +300,37 @@ def clean_dic(eeg_dict):
   return new_dict, id_mapping
 
 def shuffle_split_data(eeg_dict):
+    # Separate the keys based on the labels (-1, 0, 1)
+    label_keys = defaultdict(list)
+    for key, value in eeg_dict.items():
+        label = value['label']  # Assuming the label key is 'label' in the value dictionary
+        label_keys[label].append(key)
 
-  # Shuffle the keys of the original dictionary
-  keys = list(eeg_dict.keys())
-  random.shuffle(keys)
+    # Shuffle the keys for each label
+    for label in label_keys:
+        random.shuffle(label_keys[label])
 
-  # Calculate the proportions
-  total_instances = len(eeg_dict)
-  train_proportion = int(0.7 * total_instances)
-  val_proportion = int(0.15 * total_instances)
+    # Calculate the proportions for each set based on label counts
+    label_counts = {label: len(label_keys[label]) for label in label_keys}
+    train_proportion = {label: int(0.7 * count) for label, count in label_counts.items()}
+    val_proportion = {label: int(0.15 * count) for label, count in label_counts.items()}
 
-  # Split the data dictionary
-  train_data = {}
-  val_data = {}
-  test_data = {}
+    # Split the data dictionary
+    train_data = {}
+    val_data = {}
+    test_data = {}
 
-  # Iterate over the shuffled keys and distribute the instances
-  for i, key in tqdm(enumerate(keys), desc = 'Spltting Dictionary'):
-      value = eeg_dict[key]
-      if i < train_proportion:
-          train_data[key] = value
-      elif train_proportion <= i < train_proportion + val_proportion:
-          val_data[key] = value
-      else:
-          test_data[key] = value
-          
-  return train_data, val_data, test_data
-  
+    # Iterate over the shuffled keys and distribute the instances, maintaining equal distribution
+    for label in label_keys:
+        keys = label_keys[label]
+        for i, key in tqdm(enumerate(keys), desc=f'Splitting Dictionary (Label: {label})'):
+            value = eeg_dict[key]
+            if i < train_proportion[label]:
+                train_data[key] = value
+            elif train_proportion[label] <= i < train_proportion[label] + val_proportion[label]:
+                val_data[key] = value
+            else:
+                test_data[key] = value
+
+    return train_data, val_data, test_data
   

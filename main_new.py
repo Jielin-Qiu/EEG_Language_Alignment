@@ -13,15 +13,15 @@ from config import EEG_LEN, TEXT_LEN, d_model, d_inner, \
     num_layers, num_heads, d_k, d_v, class_num, dropout
 from optim_new import ScheduledOptim, early_stopping
 from trainer import train
-from evaluator import eval
-from model_new import FusionTransformer, EEGTransformer, TextTransformer, Transformer
+from evaluator import eval, inference
+from model_new import Transformer
 from utils import open_file
 from dataset_new import prepare_sr_eeg_data, EEGDataset, clean_dic, shuffle_split_data
 torch.set_num_threads(2)
 
 def get_args():
     parser = argparse.ArgumentParser(description=None)
-    parser.add_argument('--model', type=str, help="Please choose a model from the following list: ['transformer', 'biLSTM', 'MLP', 'resnet', 'fusion', 'CCA_fusion', 'CCA_ds', 'WD_fusion', 'WD_ds']")
+    parser.add_argument('--model', type=str, help="Please choose a model from the following list: ['transformer', 'biLSTM', 'MLP', 'resnet']")
     parser.add_argument('--modality', type = str, default = None, help="Please choose a modality from the following list: ['eeg', 'text', fusion]")
     parser.add_argument('--dataset', type=str, help="Please choose a dataset from the following list: ['KEmoCon', 'ZuCo']")
     parser.add_argument('--task', default ='SA', type=str, help="If dataset == Zuco, please choose a task from the following list: ['SA', 'RD']")
@@ -35,6 +35,10 @@ def get_args():
     parser.add_argument('--warm_steps', type = int, default = 2000)
     parser.add_argument('--epochs', type = int, default = 200)
     parser.add_argument('--device', type = str, default = 'cuda')
+    parser.add_argument('--inference', type = int, default = 0)
+    parser.add_argument('--checkpoint', type = str, default = None)
+    parser.add_argument('--dev', type = int, default = 0)
+    parser.add_argument('--loss', type = str, default = 'CE', help = "Please choose one of the following loss functions [CE, CCA, WD, CCAWD]")
     
     return parser.parse_args()
 
@@ -107,25 +111,6 @@ if __name__ == '__main__':
                     shuffle=False,
                 )
                 
-                # if args.model == 'transformer' and args.modality == 'fusion':
-                #     model = FusionTransformer(device = device, d_feature_text = TEXT_LEN, d_feature_eeg = EEG_LEN,\
-                #                             d_model = d_model, d_inner = d_inner, n_layers = num_layers, \
-                #                             n_head=num_heads, d_k = d_k, d_v = d_v, dropout= dropout, \
-                #                             class_num = class_num, args = args)
-                    
-                # elif args.model == 'transformer' and args.modality == 'text':
-                #     model = TextTransformer(device = device, d_feature_text = TEXT_LEN,\
-                #                             d_model = d_model, d_inner = d_inner, n_layers = num_layers, \
-                #                             n_head=num_heads, d_k = d_k, d_v = d_v, dropout= dropout, \
-                #                             class_num = class_num, args = args)
-                    
-                # elif args.model == 'transformer' and args.modality == 'eeg':
-                #     print('hello')
-                #     model = EEGTransformer(device = device, d_feature_eeg = EEG_LEN,\
-                #                             d_model = d_model, d_inner = d_inner, n_layers = num_layers, \
-                #                             n_head=num_heads, d_k = d_k, d_v = d_v, dropout= dropout, \
-                #                             class_num = class_num, args = args)
-                
                 if args.model == 'transformer':
                     model = Transformer(device = device, d_feature_text = TEXT_LEN, d_feature_eeg = EEG_LEN,\
                                             d_model = d_model, d_inner = d_inner, n_layers = num_layers, \
@@ -142,40 +127,54 @@ if __name__ == '__main__':
                 all_train_loss, all_train_acc, all_val_loss, all_val_acc = [], [], [], []
                 all_pred_val, all_label_val = [], []
                 eva_indices = []
-                for epoch in range(args.epochs):
-                    
-                    print('[ Epoch', epoch, ']')
-                    start = time.time()
-                    
-                    train_loss, train_acc, train_cm, train_preds, train_labels = train(train_loader, device, model, optimizer, train_dataset.__len__(), args)
-                    val_loss, val_acc, val_cm, eva_indi, val_preds, val_labels = eval(val_loader, device, model, val_dataset.__len__(), args)
-                    
-                    all_pred_val.extend(val_preds)
-                    all_label_val.extend(val_labels)
-                    all_train_loss.append(train_loss)
-                    all_train_acc.append(train_acc)
-                    all_val_loss.append(val_loss)
-                    all_val_acc.append(val_acc)
-                    eva_indices.append(eva_indi)
-                    
-                    model_state_dict = model.state_dict()
-                    
-                    checkpoint = {
-                        'model' : model_state_dict,
-                        'config_file' : 'config',
-                        'epoch' : epoch
-                    }
-                    
-                    if eva_indi >= max(eva_indices):
-                        torch.save(checkpoint, f'baselines/{args.model}_{args.modality}_{args.level}_{num_layers}_{num_heads}_{args.batch_size}.chkpt')
-                        print('    - [Info] The checkpoint file has been updated.')
+                if args.inference == 1:
+                    chkpt_path = os.path.join('baselines', args.checkpoint)
+                    print(chkpt_path)
+                    checkpoint = torch.load(chkpt_path, map_location = 'cuda')
+                    model.load_state_dict(checkpoint['model'])
+                    model = model.to(device)
+                    inference(test_loader, device, model, test_dataset.__len__(), args)
+                
+                else:
+                    for epoch in range(args.epochs):
                         
-                    early_stop = early_stopping(all_val_loss, patience = 5, delta = 0.01)
-                    
-                    if early_stop:
-                        print('Validation loss has stopped decreasing. Early stopping...')
-                        break
-                    
+                        print('[ Epoch', epoch, ']')
+                        start = time.time()
+                        
+                        train_loss, train_acc, train_cm, train_preds, train_labels = train(train_loader, device, model, optimizer, train_dataset.__len__(), args)
+                        val_loss, val_acc, val_cm, eva_indi, val_preds, val_labels = eval(val_loader, device, model, val_dataset.__len__(), args)
+                        
+                        all_pred_val.extend(val_preds)
+                        all_label_val.extend(val_labels)
+                        all_train_loss.append(train_loss)
+                        all_train_acc.append(train_acc)
+                        all_val_loss.append(val_loss)
+                        all_val_acc.append(val_acc)
+                        eva_indices.append(eva_indi)
+                        
+                        model_state_dict = model.state_dict()
+                        
+                        checkpoint = {
+                            'model' : model_state_dict,
+                            'config_file' : 'config',
+                            'epoch' : epoch
+                        }
+                        
+                        if eva_indi >= max(eva_indices):
+                            torch.save(checkpoint, f'baselines/{args.model}_{args.modality}_{args.level}_{num_layers}_{num_heads}_{args.batch_size}.chkpt')
+                            print('    - [Info] The checkpoint file has been updated.')
+                            
+                        early_stop = early_stopping(all_val_loss, patience = 5, delta = 0.01)
+                        
+                        if early_stop:
+                            print('Validation loss has stopped decreasing. Early stopping...')
+                            break   
+                        
+                    checkpoint = torch.load(f'baselines/{args.model}_{args.modality}_{args.level}_{num_layers}_{num_heads}_{args.batch_size}_{args.loss}.chkpt', map_location = 'cuda')
+                    model.load_state_dict(checkpoint['model'])
+                    model = model.to(device)
+                    inference(test_loader, device, model, test_dataset.__len__(), args)    
+                                        
                     
                     
                     

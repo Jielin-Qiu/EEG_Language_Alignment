@@ -1,0 +1,19 @@
+baselines/transformer_eeg_sentence_1_2.chkpt
+test_cm: [[11 13  0]                                              
+ [ 4 20  0]
+ [ 5  7  0]]
+acc_SP is : 0.5
+pre_i is : [0.55, 0.5, 0.0]
+rec_i is : [0.4583333333333333, 0.8333333333333334, 0.0]
+F1_i is : [0.5, 0.625, 0.0]
+test_acc is : 0.5166666666666667
+
+baselines/transformer_fusion_sentence_12_12_16.chkpt
+test_cm: [[ 0 16  0]                                              
+ [ 0 26  0]
+ [ 0 18  0]]
+acc_SP is : 0.43333333333333335
+pre_i is : [0.0, 0.43333333333333335, 0.0]
+rec_i is : [0.0, 1.0, 0.0]
+F1_i is : [0.0, 0.6046511627906976, 0.0]
+test_acc is : 0.43333333333333335
