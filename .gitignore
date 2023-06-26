@@ -5,3 +5,4 @@ data/
 *.ckpt
 *.csv
 *.mat
+pred_labels/
