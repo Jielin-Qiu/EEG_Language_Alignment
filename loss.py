@@ -94,15 +94,15 @@ def cal_loss(label, args, pred=None, text_embed=None, eeg_embed=None):
     
     if args.loss == 'CE':
         return loss, n_correct
-    elif args.loss == 'CCA':
+    elif args.loss == 'CCA' and args.modality == 'fusion':
         print(text_embed.shape)
         print(eeg_embed.shape)
         loss += cca.loss(text_embed, eeg_embed)
         return loss, n_correct
-    elif args.loss == 'WD':
+    elif args.loss == 'WD' and args.modality == 'fusion':
         loss += torch.tensor(wasserstein_distance(text_embed.cpu().detach().numpy().flatten(), eeg_embed.cpu().detach().numpy().flatten()), requires_grad=True)
         return loss, n_correct
-    elif args.loss == 'CCAWD':
+    elif args.loss == 'CCAWD' and args.modality == 'fusion':
         loss += cca.loss(text_embed, eeg_embed)
         loss += torch.tensor(wasserstein_distance(text_embed.cpu().detach().numpy().flatten(), eeg_embed.cpu().detach().numpy().flatten()), requires_grad=True)
         return loss, n_correct    

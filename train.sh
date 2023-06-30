@@ -1,2 +1,2 @@
-CUDA_VISIBLE_DEVICES=2 python main_new.py --dataset ZuCo --task SA --level sentence --modality text --model transformer --batch_size 64 --inference 0 --dev 0 --loss WD
-CUDA_VISIBLE_DEVICES=1 python main_new.py --dataset ZuCo --task SA --level sentence --modality fusion --model transformer --batch_size 1 --checkpoint transformer_fusion_sentence_1_1_64.chkpt --inference 1 --dev 0 --loss WD
+CUDA_VISIBLE_DEVICES=3 python main_new.py --dataset ZuCo --task SA --level sentence --modality fusion --model transformer --batch_size 2 --inference 0 --dev 1 --loss CCA
+# CUDA_VISIBLE_DEVICES=1 python main_new.py --dataset ZuCo --task SA --level sentence --modality fusion --model transformer --batch_size 1 --checkpoint transformer_fusion_sentence_1_1_64.chkpt --inference 1 --dev 0 --loss WD
