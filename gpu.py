@@ -1,5 +1,10 @@
 import torch
 
+# Print Pytorch and Cuda version
+
+print(torch.version.cuda)
+print(torch.__version__)
+
 #If CUDA is available, prints True. Else, False.
 print(torch.cuda.is_available())
 

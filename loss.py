@@ -42,20 +42,38 @@ class cca_loss():
         SigmaHat22 = (1.0 / (m - 1)) * torch.matmul(H2bar,
                                                     H2bar.t()) + r2 * torch.eye(o2, device=self.device)
 
-        # [D1, V1] = torch.symeig(SigmaHat11, eigenvectors=True)
-        # [D2, V2] = torch.symeig(SigmaHat22, eigenvectors=True)
+        [D1, V1] = torch.symeig(SigmaHat11, eigenvectors=True)
+        [D2, V2] = torch.symeig(SigmaHat22, eigenvectors=True)
+        print('sigma')
+        print(SigmaHat11.shape)
+        print(SigmaHat12.shape)
+        print(SigmaHat22.shape)
+        print('starting pos')
+        # [D1, V1] = torch.linalg.eig(SigmaHat11)
+        # [D2, V2] = torch.linalg.eig(SigmaHat22)
         
-        [D1, V1] = torch.eig(SigmaHat11, eigenvectors=True)
-        [D2, V2] = torch.eig(SigmaHat22, eigenvectors=True)
+        # [D1, V1] = torch.eig(SigmaHat11, eigenvectors=True)
+        # [D2, V2] = torch.eig(SigmaHat22, eigenvectors=True)
 
 
-        posInd1 = torch.gt(D1, eps).nonzero()[:, 0]
-        D1 = D1[posInd1]
+        posInd1 = torch.gt(D1[:, 0], eps).nonzero()[:, 0]
+        D1 = D1[posInd1, 0]
         V1 = V1[:, posInd1]
+        D1 = torch.squeeze(D1)  # Remove extra dimensions from D1
+        # Reshape D1 to 1-dimensional tensor
         posInd2 = torch.gt(D2, eps).nonzero()[:, 0]
-        D2 = D2[posInd2]
+        posInd2 = torch.gt(D2[:, 0], eps).nonzero()[:, 0]
+        D2 = D2[posInd2, 0]
         V2 = V2[:, posInd2]
+        D2 = torch.squeeze(D2)
 
+        print(posInd1.shape)
+        print(posInd2.shape)
+        print(D1.shape)
+        print(V1.shape)
+        print(D2.shape)
+        print(V2.shape)
+        
 
         SigmaHat11RootInv = torch.matmul(
             torch.matmul(V1, torch.diag(D1 ** -0.5)), V1.t())
@@ -98,6 +116,8 @@ def cal_loss(label, args, pred=None, text_embed=None, eeg_embed=None):
         print(text_embed.shape)
         print(eeg_embed.shape)
         loss += cca.loss(text_embed, eeg_embed)
+        print('loss')
+        print(loss)
         return loss, n_correct
     elif args.loss == 'WD' and args.modality == 'fusion':
         loss += torch.tensor(wasserstein_distance(text_embed.cpu().detach().numpy().flatten(), eeg_embed.cpu().detach().numpy().flatten()), requires_grad=True)

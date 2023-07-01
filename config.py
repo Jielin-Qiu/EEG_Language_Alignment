@@ -1,7 +1,7 @@
 import torch
 
-device = torch.device('cuda')
-# device = torch.device('cpu')
+# device = torch.device('cuda')
+device = torch.device('cpu')
 
 d_model = 16
 num_layers = 1

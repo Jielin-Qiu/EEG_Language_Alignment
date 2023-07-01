@@ -34,7 +34,7 @@ def get_args():
     parser.add_argument('--weight_decay', type = float, default = 1e-2)
     parser.add_argument('--warm_steps', type = int, default = 2000)
     parser.add_argument('--epochs', type = int, default = 200)
-    parser.add_argument('--device', type = str, default = 'cuda')
+    parser.add_argument('--device', type = str, default = 'cpu')
     parser.add_argument('--inference', type = int, default = 0)
     parser.add_argument('--checkpoint', type = str, default = None)
     parser.add_argument('--dev', type = int, default = 0)
