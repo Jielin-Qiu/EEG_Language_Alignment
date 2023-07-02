@@ -62,7 +62,7 @@ def eval(valid_loader, device, model, total_num, args):
     valid_acc = total_correct / total_num
     print(f'Validation Loss: {valid_loss}')
     print(f'Validation Accuracy: {valid_acc}')
-    return valid_loss, valid_acc, cm, sum(rec_i[1:]) * 0.6 + sum(pre_i[1:]) * 0.4, all_pred, all_labels
+    return valid_loss, valid_acc, cm, all_pred, all_labels
 
 
 def calculate_average(numbers):

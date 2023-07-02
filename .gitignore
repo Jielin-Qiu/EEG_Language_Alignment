@@ -7,3 +7,4 @@ data/
 *.mat
 pred_labels/
 notes.txt
+lr_curves/

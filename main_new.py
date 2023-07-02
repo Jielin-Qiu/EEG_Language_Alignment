@@ -16,6 +16,7 @@ from trainer import train
 from evaluator import eval, inference
 from model_new import Transformer
 from utils import open_file
+from new_plot import plot_learning_curve
 from dataset_new import prepare_sr_eeg_data, EEGDataset, clean_dic, shuffle_split_data
 torch.set_num_threads(2)
 
@@ -98,7 +99,8 @@ if __name__ == '__main__':
                 train_loader = DataLoader(
                     dataset=train_dataset,
                     batch_size=args.batch_size,
-                    shuffle=True,
+                    shuffle=True, 
+                    drop_last = True
                 )
                 val_loader = DataLoader(
                     dataset=val_dataset,
@@ -107,7 +109,7 @@ if __name__ == '__main__':
                 )
                 test_loader = DataLoader(
                     dataset=test_dataset,
-                    batch_size=1,
+                    batch_size=args.batch_size,
                     shuffle=False,
                 )
                 
@@ -127,6 +129,7 @@ if __name__ == '__main__':
                 all_train_loss, all_train_acc, all_val_loss, all_val_acc = [], [], [], []
                 all_pred_val, all_label_val = [], []
                 eva_indices = []
+                all_epochs  = []
                 if args.inference == 1:
                     chkpt_path = os.path.join('baselines', args.checkpoint)
                     print(chkpt_path)
@@ -142,15 +145,7 @@ if __name__ == '__main__':
                         start = time.time()
                         
                         train_loss, train_acc, train_cm, train_preds, train_labels = train(train_loader, device, model, optimizer, train_dataset.__len__(), args)
-                        val_loss, val_acc, val_cm, eva_indi, val_preds, val_labels = eval(val_loader, device, model, val_dataset.__len__(), args)
-                        
-                        all_pred_val.extend(val_preds)
-                        all_label_val.extend(val_labels)
-                        all_train_loss.append(train_loss)
-                        all_train_acc.append(train_acc)
-                        all_val_loss.append(val_loss)
-                        all_val_acc.append(val_acc)
-                        eva_indices.append(eva_indi)
+                        val_loss, val_acc, val_cm, val_preds, val_labels = eval(val_loader, device, model, val_dataset.__len__(), args)
                         
                         model_state_dict = model.state_dict()
                         
@@ -159,17 +154,27 @@ if __name__ == '__main__':
                             'config_file' : 'config',
                             'epoch' : epoch
                         }
+                    
+                        all_pred_val.extend(val_preds)
+                        all_label_val.extend(val_labels)
+                        all_train_loss.append(train_loss)
+                        all_train_acc.append(train_acc)
+                        all_val_loss.append(val_loss)
+                        all_val_acc.append(val_acc)
+                        all_epochs.append(epoch)
                         
-                        if eva_indi >= max(eva_indices):
-                            torch.save(checkpoint, f'baselines/{args.model}_{args.modality}_{args.level}_{num_layers}_{num_heads}_{args.batch_size}.chkpt')
-                            print('    - [Info] The checkpoint file has been updated.')
+                        
+                        if val_loss <= max(all_val_loss):
+                                torch.save(checkpoint, f'baselines/{args.model}_{args.modality}_{args.level}_{num_layers}_{num_heads}_{args.batch_size}_{args.loss}.chkpt')
+                                print('    - [Info] The checkpoint file has been updated.')
                             
                         early_stop = early_stopping(all_val_loss, patience = 5, delta = 0.01)
                         
                         if early_stop:
                             print('Validation loss has stopped decreasing. Early stopping...')
                             break   
-                        
+                    
+                    plot_learning_curve(all_train_acc, all_train_loss, all_val_acc, all_val_loss, all_epochs, args)
                     checkpoint = torch.load(f'baselines/{args.model}_{args.modality}_{args.level}_{num_layers}_{num_heads}_{args.batch_size}_{args.loss}.chkpt', map_location = 'cuda')
                     model.load_state_dict(checkpoint['model'])
                     model = model.to(device)

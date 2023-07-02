@@ -11,7 +11,6 @@ d_inner = 32
 dropout = 0.3
 warm_steps = 2000
 fea_num = 7
-epoch = 200
 PAD = 0
 KS = 3
 d_k = 64
