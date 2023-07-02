@@ -18,7 +18,7 @@ If you feel our code or models helps in your research, kindly cite our papers:
 
 ## Usage
 
-### Set up Environment
+### Set up the Environment
 
 Create a virtual environment and activate it. 
 
@@ -75,12 +75,12 @@ Preprocessing scripts are provided as well.
 ### Training 
 
 The `main.py` file is used for training selected models. Arguments are provided for selecting datasets, modalities, models, levels, and tasks. 
-Please view the `config.py` file in tandem and customize as necessary. 
+Please view the `config.py` file in tandem and customize it as necessary. 
 
 
 ### Plotting
 
-The `plot.py` file is used for plotting TSNE, alignment, and brain topological figures. Arguments are also provided for selecting datasets, modalities, models, levels, tasks, and type of plots. 
+The `plot.py` file is used for plotting TSNE, alignment, and brain topological figures. Arguments are also provided for selecting datasets, modalities, models, levels, tasks, and types of plots. 
 
 
 ### Citation
@@ -97,10 +97,6 @@ The `plot.py` file is used for plotting TSNE, alignment, and brain topological f
 	bdsk-url-1 = {https://arxiv.org/abs/2208.06348}}
 ```
 
-### Reference
-
-This is the same codebase as in: https://github.com/willxxy/EEG_Text_alignment
-
 ### Contact
 
-If you have any question, please contact willhan327@outlook.com, jielinq@andrew.cmu.edu.
+If you have any questions, please contact wjhan@andrew.cmu.edu, jielinq@andrew.cmu.edu.
