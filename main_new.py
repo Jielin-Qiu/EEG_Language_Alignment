@@ -178,6 +178,7 @@ if __name__ == '__main__':
                     checkpoint = torch.load(f'baselines/{args.model}_{args.modality}_{args.level}_{num_layers}_{num_heads}_{args.batch_size}_{args.loss}.chkpt', map_location = 'cuda')
                     model.load_state_dict(checkpoint['model'])
                     model = model.to(device)
+                    print(f'Inferencing checkpoint: {args.model}_{args.modality}_{args.level}_{num_layers}_{num_heads}_{args.batch_size}_{args.loss}.chkpt')
                     inference(test_loader, device, model, test_dataset.__len__(), args)    
                                         
                     
