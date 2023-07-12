@@ -20,3 +20,6 @@ test_acc is : 0.43333333333333335
 
 
 batch size 64 best
+
+
+CE 0.7096774193548387 transformer_fusion_sentence_1_4_64_CE.chkpt

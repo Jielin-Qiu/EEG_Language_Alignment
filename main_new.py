@@ -46,7 +46,7 @@ def get_args():
 
 if __name__ == '__main__':
     
-    
+    torch.manual_seed(1)
     args = get_args()
     os.environ['TOKENIZERS_PARALLELISM'] = 'false'
     device = torch.device(args.device)
