@@ -3,11 +3,11 @@ import torch
 device = torch.device('cuda')
 # device = torch.device('cpu')
 
-d_model = 64
+d_model = 8
 num_layers = 1
-num_heads = 1
+num_heads = 2
 class_num = 3
-d_inner = 128
+d_inner = 16
 dropout = 0.3
 warm_steps = 2000
 fea_num = 7

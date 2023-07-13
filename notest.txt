@@ -1,25 +1,79 @@
-baselines/transformer_eeg_sentence_1_2.chkpt
-test_cm: [[11 13  0]                                              
- [ 4 20  0]
- [ 5  7  0]]
-acc_SP is : 0.5
-pre_i is : [0.55, 0.5, 0.0]
-rec_i is : [0.4583333333333333, 0.8333333333333334, 0.0]
-F1_i is : [0.5, 0.625, 0.0]
-test_acc is : 0.5166666666666667
+Inferencing checkpoint: transformer_fusion_sentence_1_1_8_16_64_CE.chkpt
+test_cm: [[ 7  1  7]                                                                         
+ [ 0 14  1]
+ [ 4  2  7]]
+acc_SP is : 0.65625
+pre_i is : [0.6363636363636364, 0.8235294117647058, 0.4666666666666667]
+rec_i is : [0.4666666666666667, 0.9333333333333333, 0.5384615384615384]
+F1_i is : [0.5384615384615385, 0.8749999999999999, 0.5]
+test_acc is : 0.6511627906976745
 
-baselines/transformer_fusion_sentence_12_12_16.chkpt
-test_cm: [[ 0 16  0]                                              
- [ 0 26  0]
- [ 0 18  0]]
-acc_SP is : 0.43333333333333335
-pre_i is : [0.0, 0.43333333333333335, 0.0]
-rec_i is : [0.0, 1.0, 0.0]
-F1_i is : [0.0, 0.6046511627906976, 0.0]
-test_acc is : 0.43333333333333335
-
-
-batch size 64 best
+baselines/transformer_fusion_sentence_1_1_8_16_64_CE.chkpt
+test_cm: [[15  0  0]                                                                         
+ [15  0  0]
+ [13  0  0]]
+acc_SP is : nan
+pre_i is : [0.3488372093023256, 0.0, 0.0]
+rec_i is : [1.0, 0.0, 0.0]
+F1_i is : [0.5172413793103449, 0.0, 0.0]
+test_acc is : 0.3488372093023256
 
 
-0.5645161290322581 transformer_fusion_sentence_1_2_64_WD.chkpt
+
+
+Inferencing checkpoint: transformer_fusion_sentence_1_1_8_16_64_WD.chkpt                     
+test_cm: [[ 4  4  7]                                                                         
+ [ 3 12  0]                                                                                  
+ [ 4  0  9]]                                                                                 
+acc_SP is : 0.65625                                                                          
+pre_i is : [0.36363636363636365, 0.75, 0.5625]                                               
+rec_i is : [0.26666666666666666, 0.8, 0.6923076923076923]                                    
+F1_i is : [0.30769230769230765, 0.7741935483870969, 0.6206896551724138]                      
+test_acc is : 0.5813953488372093                                                             
+cuda  
+
+
+
+Inferencing checkpoint: transformer_fusion_sentence_1_1_8_16_64_CCAWD.chkpt                  
+test_cm: [[ 5  5  5]                                                                         
+ [ 2 12  1]                                                                                  
+ [ 2  2  9]]                                                                                 
+acc_SP is : 0.6176470588235294                                                               
+pre_i is : [0.5555555555555556, 0.631578947368421, 0.6]                                      
+rec_i is : [0.3333333333333333, 0.8, 0.6923076923076923]                                     
+F1_i is : [0.4166666666666667, 0.7058823529411765, 0.6428571428571429]                       
+test_acc is : 0.6046511627906976  
+
+
+Inferencing checkpoint: transformer_fusion_sentence_1_1_8_16_64_CCA.chkpt                    
+test_cm: [[ 7  3  5]                                                                         
+ [ 3 12  0]                                                                                  
+ [ 4  0  9]]                                                                                 
+acc_SP is : 0.7241379310344828                                                               
+pre_i is : [0.5, 0.8, 0.6428571428571429]                                                    
+rec_i is : [0.4666666666666667, 0.8, 0.6923076923076923]                                     
+F1_i is : [0.4827586206896552, 0.8000000000000002, 0.6666666666666666]                       
+test_acc is : 0.6511627906976745   
+
+
+Inferencing checkpoint: transformer_fusion_sentence_1_2_8_16_64_CCAWD.chkpt
+test_cm: [[ 6  4  5]                                                                         
+ [ 0 13  2]
+ [ 1  3  9]]
+acc_SP is : 0.6111111111111112
+pre_i is : [0.8571428571428571, 0.65, 0.5625]
+rec_i is : [0.4, 0.8666666666666667, 0.6923076923076923]
+F1_i is : [0.5454545454545455, 0.7428571428571429, 0.6206896551724138]
+test_acc is : 0.6511627906976745
+
+
+
+Inferencing checkpoint: transformer_fusion_sentence_1_2_8_16_64_CCA.chkpt
+test_cm: [[ 6  3  6]                                                                         
+ [ 1 11  3]
+ [11  1  1]]
+acc_SP is : 0.48
+pre_i is : [0.3333333333333333, 0.7333333333333333, 0.1]
+rec_i is : [0.4, 0.7333333333333333, 0.07692307692307693]
+F1_i is : [0.3636363636363636, 0.7333333333333333, 0.08695652173913043]
+test_acc is : 0.4186046511627907
