@@ -46,7 +46,7 @@ def get_args():
 
 if __name__ == '__main__':
     
-    torch.manual_seed(1)
+    torch.manual_seed(2)
     args = get_args()
     os.environ['TOKENIZERS_PARALLELISM'] = 'false'
     device = torch.device(args.device)
@@ -165,7 +165,7 @@ if __name__ == '__main__':
                         
                         
                         if val_loss <= min(all_val_loss):
-                                torch.save(checkpoint, f'baselines/{args.model}_{args.modality}_{args.level}_{num_layers}_{num_heads}_{args.batch_size}_{args.loss}.chkpt')
+                                torch.save(checkpoint, f'baselines/{args.model}_{args.modality}_{args.level}_{num_layers}_{num_heads}_{d_model}_{d_inner}_{args.batch_size}_{args.loss}.chkpt')
                                 print('    - [Info] The checkpoint file has been updated.')
                             
                         early_stop = early_stopping(all_val_loss, patience = 10, delta = 0.01)
@@ -175,10 +175,10 @@ if __name__ == '__main__':
                             break   
                     
                     plot_learning_curve(all_train_acc, all_train_loss, all_val_acc, all_val_loss, all_epochs, args)
-                    checkpoint = torch.load(f'baselines/{args.model}_{args.modality}_{args.level}_{num_layers}_{num_heads}_{args.batch_size}_{args.loss}.chkpt', map_location = 'cuda')
+                    checkpoint = torch.load(f'baselines/{args.model}_{args.modality}_{args.level}_{num_layers}_{num_heads}_{d_model}_{d_inner}_{args.batch_size}_{args.loss}.chkpt', map_location = 'cuda')
                     model.load_state_dict(checkpoint['model'])
                     model = model.to(device)
-                    print(f'Inferencing checkpoint: {args.model}_{args.modality}_{args.level}_{num_layers}_{num_heads}_{args.batch_size}_{args.loss}.chkpt')
+                    print(f'Inferencing checkpoint: {args.model}_{args.modality}_{args.level}_{num_layers}_{num_heads}_{d_model}_{d_inner}_{args.batch_size}_{args.loss}.chkpt')
                     inference(test_loader, device, model, test_dataset.__len__(), args)    
                                         
                     

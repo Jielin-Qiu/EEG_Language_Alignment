@@ -11,45 +11,7 @@ from tqdm import tqdm
 from scipy.stats import zscore
 import random
 from transformers import BertModel, BertTokenizer
-from collections import defaultdict
-
-
-class resnet_Text_EEGDataset(Dataset):
-  def __init__(self, texts, signals, labels, tokenizer, max_len):
-    self.texts = texts
-    self.labels = labels
-    self.tokenizer = tokenizer
-    self.max_len = max_len
-    self.signals = signals
-
-  @property
-  def n_insts(self):
-    return len(self.labels)
-
-  @property
-  def text_len(self):
-    return 32
-  
-  def sig_len(self):
-    return self.signals.shape[1]
-
-  def __len__(self):
-    return self.n_insts
-
-  def __getitem__(self, item):
-    text = str(self.texts[item])
-    label = self.labels[item]
-    signal = self.signals[item]
-
-    input_ids = [self.tokenizer.encode(text, add_special_tokens=False,max_length=MAX_LEN, padding = 'max_length', truncation = True, return_token_type_ids = False, return_attention_mask = True)]   
-    input_ids = np.array(input_ids)
-    input_ids = stats.zscore(input_ids, axis=None, nan_policy='omit')
-    input_ids = np.array(input_ids)
-
-    signal = np.array([signal])
-    signal = torch.FloatTensor(signal)
-
-    return signal, torch.FloatTensor(input_ids), torch.tensor(label, dtype=torch.long)
+from collections import defaultdict 
 
 class Text_EEGDataset(Dataset):
   def __init__(self, texts, signals, labels, max_len):
@@ -98,7 +60,6 @@ def prepare_sr_eeg_data(sr_eeg_data_path, sentence_list, labels_list, sentence_i
 
         for j in range(len(io_mat_file)):
           
-        
           t1 = io_mat_file[j].mean_t1[:104]
           t2 = io_mat_file[j].mean_t2[:104]
           
@@ -294,33 +255,26 @@ def clean_dic(eeg_dict):
       id_mapping[key] = new_key
       new_dict[new_key] = value
       count += 1
-
-  # Print the new dictionary and ID mapping
   
   return new_dict, id_mapping
 
 def shuffle_split_data(eeg_dict):
-    # Separate the keys based on the labels (-1, 0, 1)
     label_keys = defaultdict(list)
     for key, value in eeg_dict.items():
-        label = value['label']  # Assuming the label key is 'label' in the value dictionary
+        label = value['label']  
         label_keys[label].append(key)
 
-    # Shuffle the keys for each label
     for label in label_keys:
         random.shuffle(label_keys[label])
 
-    # Calculate the proportions for each set based on label counts
     label_counts = {label: len(label_keys[label]) for label in label_keys}
-    train_proportion = {label: int(0.7 * count) for label, count in label_counts.items()}
-    val_proportion = {label: int(0.15 * count) for label, count in label_counts.items()}
+    train_proportion = {label: int(0.8 * count) for label, count in label_counts.items()}
+    val_proportion = {label: int(0.10 * count) for label, count in label_counts.items()}
 
-    # Split the data dictionary
     train_data = {}
     val_data = {}
     test_data = {}
 
-    # Iterate over the shuffled keys and distribute the instances, maintaining equal distribution
     for label in label_keys:
         keys = label_keys[label]
         for i, key in tqdm(enumerate(keys), desc=f'Splitting Dictionary (Label: {label})'):
