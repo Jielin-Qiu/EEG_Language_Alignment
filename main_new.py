@@ -11,11 +11,12 @@ import time
 
 from config import EEG_LEN, TEXT_LEN, d_model, d_inner, \
     num_layers, num_heads, d_k, d_v, class_num, dropout, \
-        layer2, layer3, layer4
+        layer2, layer3, layer4, in_channels, kernel_size, \
+            stride, groups, n_block
 from optim_new import ScheduledOptim, early_stopping
 from trainer import train
 from evaluator import eval, inference
-from model_new import Transformer, MLP
+from model_new import Transformer, MLP, ResNet1D
 from utils import open_file
 from new_plot import plot_learning_curve
 from dataset_new import prepare_sr_eeg_data, EEGDataset, clean_dic, shuffle_split_data
@@ -119,9 +120,13 @@ if __name__ == '__main__':
                                             d_model = d_model, d_inner = d_inner, n_layers = num_layers, \
                                             n_head=num_heads, d_k = d_k, d_v = d_v, dropout= dropout, \
                                             class_num = class_num, args = args)
-                if args.model == 'MLP':
+                elif args.model == 'MLP':
                     model = MLP(d_feature_text = TEXT_LEN, d_feature_eeg = EEG_LEN, layer2 = layer2, \
                         layer3 = layer3, layer4 = layer4, class_num = class_num, dropout = dropout, args = args)
+                
+                elif args.model == 'resnet':
+                    model = ResNet1D(in_channels=in_channels, d_feature_text=TEXT_LEN, d_feature_eeg = EEG_LEN, \
+                                kernel_size=kernel_size, stride=stride, groups = groups, n_block = n_block, n_classes=class_num, args = args)
                     
                 model = model.to(device)
                     
@@ -140,7 +145,8 @@ if __name__ == '__main__':
                     checkpoint_name = f'{args.model}_{args.modality}_{args.level}_{num_layers}_{num_heads}_{d_model}_{d_inner}_{args.batch_size}_{args.loss}'
                 elif args.model == 'MLP':
                     checkpoint_name = f'{args.model}_{args.modality}_{args.level}_{layer2}_{layer3}_{layer4}_{args.batch_size}_{args.loss}'
-                
+                elif args.model == 'resnet':
+                    checkpoint_name = f'{args.model}_{args.modality}_{args.level}_{in_channels}_{kernel_size}_{stride}_{groups}_{n_block}'
                 if args.inference == 1:
                     chkpt_path = os.path.join('baselines', args.checkpoint)
                     print(chkpt_path)

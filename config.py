@@ -30,6 +30,15 @@ layer2 = 512
 layer3 = 256
 layer4 = 128
 
+
+# resnet
+
+in_channels =64
+kernel_size = 1
+stride = 2
+groups = 2
+n_block = 1
+
 # SIG_LEN3 = 6
 
 '''
