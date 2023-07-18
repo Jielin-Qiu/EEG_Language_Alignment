@@ -156,3 +156,83 @@ class Transformer(nn.Module):
             projected_text = torch.squeeze(projected_text, dim=1)
             projected_eeg = torch.squeeze(projected_eeg, dim=1)
             return res, projected_eeg, projected_text
+
+
+class MLP(nn.Module):
+    def __init__(self, d_feature_text, d_feature_eeg, layer2, layer3, layer4, class_num, dropout, args):
+        super(MLP, self).__init__()
+
+        self.relu = nn.ReLU()
+        self.dropout = nn.Dropout(dropout)
+        self.args = args
+        if args.modality == 'text':
+            self.l1_text = nn.Linear(d_feature_text, layer2, bias = False)
+            self.l2_text = nn.Linear(layer2, layer3, bias = False)
+            self.l3_text = nn.Linear(layer3, layer4, bias = False)
+            self.l4_text = nn.Linear(layer4, class_num, bias = False)
+            
+        elif args.modality == 'eeg':
+            self.l1_eeg = nn.Linear(d_feature_eeg, layer2, bias = False)
+            self.l2_eeg = nn.Linear(layer2, layer3, bias = False)
+            self.l_eeg = nn.Linear(layer3, layer4, bias = False)
+            self.l4_eeg = nn.Linear(layer4, class_num, bias = False)
+            
+        elif args.modality == 'fusion':
+            self.l1_text = nn.Linear(d_feature_text, layer2, bias = False)
+            self.l2_text = nn.Linear(layer2, layer3, bias = False)
+            self.l3_text = nn.Linear(layer3, layer4, bias = False)
+            
+            self.l1_eeg = nn.Linear(d_feature_eeg, layer2, bias = False)
+            self.l2_eeg = nn.Linear(layer2, layer3, bias = False)
+            self.l3_eeg = nn.Linear(layer3, layer4, bias = False)
+            
+            self.l4_fusion = nn.Linear(layer4+layer4, class_num, bias = False)
+            
+        
+        
+                
+    def forward(self, text_src_seq = None, eeg_src_seq = None):
+        
+        if (text_src_seq != None) and (eeg_src_seq == None):
+            out_text = self.relu(self.l1_text(text_src_seq))
+            out_text = self.dropout(out_text)
+            out_text = self.relu(self.l2_text(out_text))
+            out_text = self.dropout(out_text)
+            out_text = self.relu(self.l3_text(out_text))
+            out_text = self.dropout(out_text)
+            out_text = self.l4_text(out_text)
+            
+            return out_text
+        
+        elif (text_src_seq == None) and (eeg_src_seq != None):
+            out_eeg = self.relu(self.l1_eeg(eeg_src_seq))
+            out_eeg = self.dropout(out_eeg)
+            out_eeg = self.relu(self.l2_eeg(out_eeg))
+            out_eeg = self.dropout(out_eeg)
+            out_eeg = self.relu(self.l3_eeg(out_eeg))
+            out_eeg = self.dropout(out_eeg)
+            out_eeg = self.l4_eeg(out_eeg)
+            
+            return out_eeg
+        
+        elif (text_src_seq != None) and (eeg_src_seq != None):
+            out_eeg = self.relu(self.l1_eeg(eeg_src_seq))
+            out_eeg = self.dropout(out_eeg)
+            out_eeg = self.relu(self.l2_eeg(out_eeg))
+            out_eeg = self.dropout(out_eeg)
+            out_eeg = self.relu(self.l3_eeg(out_eeg))
+            out_eeg = self.dropout(out_eeg)
+            
+            out_text = self.relu(self.l1_text(text_src_seq))
+            out_text = self.dropout(out_text)
+            out_text = self.relu(self.l2_text(out_text))
+            out_text = self.dropout(out_text)
+            out_text = self.relu(self.l3_text(out_text))
+            out_text = self.dropout(out_text)
+            
+            concat_feat = torch.cat((out_text, out_eeg), dim = 1)
+            
+            out_fusion = self.l4_fusion(concat_feat)
+            
+            return out_fusion
+    

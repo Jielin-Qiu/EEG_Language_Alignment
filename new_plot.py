@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 from config import num_layers, num_heads, d_model, d_inner
 
-def plot_learning_curve(train_accuracies, train_losses, val_accuracies, val_losses, epochs, args):
+def plot_learning_curve(train_accuracies, train_losses, val_accuracies, val_losses, epochs, args, checkpoint_name):
     # Plotting accuracies
     plt.figure(figsize=(10, 5))
     plt.subplot(1, 2, 1)
@@ -23,4 +23,4 @@ def plot_learning_curve(train_accuracies, train_losses, val_accuracies, val_loss
 
     # Adjusting layout and saving the plot
     plt.tight_layout()
-    plt.savefig(f'lr_curves/learning_curve_{args.model}_{args.modality}_{args.level}_{num_layers}_{num_heads}_{d_model}_{d_inner}__{args.batch_size}_{args.loss}.png')
+    plt.savefig(f'lr_curves/learning_curve_{checkpoint_name}.png')

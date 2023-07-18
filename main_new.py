@@ -10,11 +10,12 @@ from torch.utils.data import DataLoader
 import time
 
 from config import EEG_LEN, TEXT_LEN, d_model, d_inner, \
-    num_layers, num_heads, d_k, d_v, class_num, dropout
+    num_layers, num_heads, d_k, d_v, class_num, dropout, \
+        layer2, layer3, layer4
 from optim_new import ScheduledOptim, early_stopping
 from trainer import train
 from evaluator import eval, inference
-from model_new import Transformer
+from model_new import Transformer, MLP
 from utils import open_file
 from new_plot import plot_learning_curve
 from dataset_new import prepare_sr_eeg_data, EEGDataset, clean_dic, shuffle_split_data
@@ -118,6 +119,10 @@ if __name__ == '__main__':
                                             d_model = d_model, d_inner = d_inner, n_layers = num_layers, \
                                             n_head=num_heads, d_k = d_k, d_v = d_v, dropout= dropout, \
                                             class_num = class_num, args = args)
+                if args.model == 'MLP':
+                    model = MLP(d_feature_text = TEXT_LEN, d_feature_eeg = EEG_LEN, layer2 = layer2, \
+                        layer3 = layer3, layer4 = layer4, class_num = class_num, dropout = dropout, args = args)
+                    
                 model = model.to(device)
                     
                 optimizer = ScheduledOptim(
@@ -130,6 +135,12 @@ if __name__ == '__main__':
                 all_pred_val, all_label_val = [], []
                 eva_indices = []
                 all_epochs  = []
+                
+                if args.model == 'transformer':
+                    checkpoint_name = f'{args.model}_{args.modality}_{args.level}_{num_layers}_{num_heads}_{d_model}_{d_inner}_{args.batch_size}_{args.loss}'
+                elif args.model == 'MLP':
+                    checkpoint_name = f'{args.model}_{args.modality}_{args.level}_{layer2}_{layer3}_{layer4}_{args.batch_size}_{args.loss}'
+                
                 if args.inference == 1:
                     chkpt_path = os.path.join('baselines', args.checkpoint)
                     print(chkpt_path)
@@ -165,8 +176,8 @@ if __name__ == '__main__':
                         
                         
                         if val_loss <= min(all_val_loss):
-                                torch.save(checkpoint, f'baselines/{args.model}_{args.modality}_{args.level}_{num_layers}_{num_heads}_{d_model}_{d_inner}_{args.batch_size}_{args.loss}.chkpt')
-                                print('    - [Info] The checkpoint file has been updated.')
+                            torch.save(checkpoint, f'baselines/{checkpoint_name}.chkpt')
+                            print('    - [Info] The checkpoint file has been updated.')
                             
                         early_stop = early_stopping(all_val_loss, patience = 10, delta = 0.01)
                         
@@ -174,11 +185,13 @@ if __name__ == '__main__':
                             print('Validation loss has stopped decreasing. Early stopping...')
                             break   
                     
-                    plot_learning_curve(all_train_acc, all_train_loss, all_val_acc, all_val_loss, all_epochs, args)
-                    checkpoint = torch.load(f'baselines/{args.model}_{args.modality}_{args.level}_{num_layers}_{num_heads}_{d_model}_{d_inner}_{args.batch_size}_{args.loss}.chkpt', map_location = 'cuda')
+                    plot_learning_curve(all_train_acc, all_train_loss, all_val_acc, all_val_loss, all_epochs, args, checkpoint_name)
+                    checkpoint = torch.load(f'baselines/{checkpoint_name}.chkpt', map_location = 'cuda')
+                    
                     model.load_state_dict(checkpoint['model'])
                     model = model.to(device)
-                    print(f'Inferencing checkpoint: {args.model}_{args.modality}_{args.level}_{num_layers}_{num_heads}_{d_model}_{d_inner}_{args.batch_size}_{args.loss}.chkpt')
+                    
+                    print(f'Inferencing checkpoint: {checkpoint_name}')
                     inference(test_loader, device, model, test_dataset.__len__(), args)    
                                         
                     

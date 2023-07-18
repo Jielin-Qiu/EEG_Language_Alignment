@@ -42,7 +42,7 @@ def eval(valid_loader, device, model, total_num, args):
 
                 total_loss += loss.item()
                 total_correct += n_correct
-            else:
+            elif args.modality == 'fusion' and args.model == 'transformer':
                 pred, eeg_embed, text_embed = model(eeg_src_seq = eeg, text_src_seq = text)
                 all_labels.extend(label.cpu().numpy())
                 all_res.extend(pred.max(1)[1].cpu().numpy())
@@ -51,6 +51,16 @@ def eval(valid_loader, device, model, total_num, args):
 
                 total_loss += loss.item()
                 total_correct += n_correct
+                
+            elif args.modality == 'fusion' and args.model == 'MLP':
+                pred = model(eeg_src_seq = eeg, text_src_seq = text)
+                all_labels.extend(label.cpu().numpy())
+                all_res.extend(pred.max(1)[1].cpu().numpy())
+                loss, n_correct = cal_loss(label, args, pred = pred)
+                all_pred.extend(pred.cpu().detach().numpy())
+
+                total_loss += loss.item()
+                total_correct += n_correct      
                 
     cm = confusion_matrix(all_labels, all_res)
     acc_SP, pre_i, rec_i, F1_i = cal_statistic(cm)
@@ -109,7 +119,7 @@ def inference(test_loader, device, model, total_num, args):
 
                 total_loss += loss.item()
                 total_correct += n_correct
-            else:
+            elif args.modality == 'fusion' and args.model == 'transformer':
                 pred, eeg_embed, text_embed = model(eeg_src_seq = eeg, text_src_seq = text)
                 all_labels.extend(label.cpu().numpy())
                 all_res.extend(pred.max(1)[1].cpu().numpy())
@@ -118,6 +128,16 @@ def inference(test_loader, device, model, total_num, args):
 
                 total_loss += loss.item()
                 total_correct += n_correct
+                
+            elif args.modality == 'fusion' and args.model == 'MLP':
+                pred = model(eeg_src_seq = eeg, text_src_seq = text)
+                all_labels.extend(label.cpu().numpy())
+                all_res.extend(pred.max(1)[1].cpu().numpy())
+                loss, n_correct = cal_loss(label, args, pred = pred)
+                all_pred.extend(pred.cpu().detach().numpy())
+
+                total_loss += loss.item()
+                total_correct += n_correct      
 
 
     np.savetxt(f'pred_labels/{args.model}_{args.modality}_{args.level}_{num_layers}_{num_heads}_{args.batch_size}_all_pred.txt',all_pred)

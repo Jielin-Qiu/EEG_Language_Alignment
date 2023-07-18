@@ -3,6 +3,10 @@ import torch
 device = torch.device('cuda')
 # device = torch.device('cpu')
 
+EEG_LEN = 832
+TEXT_LEN = 768
+
+# Transformer
 d_model = 8
 num_layers = 1
 num_heads = 2
@@ -17,8 +21,15 @@ d_k = 64
 d_v = 64
 
 Fea_PLUS = 2
-EEG_LEN = 832
-TEXT_LEN = 768
+
+
+
+# MLP
+
+layer2 = 512
+layer3 = 256
+layer4 = 128
+
 # SIG_LEN3 = 6
 
 '''
