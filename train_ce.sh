@@ -1,0 +1,1 @@
+CUDA_VISIBLE_DEVICES=1 python main_new.py --dataset ZuCo --task SA --level sentence --modality text --model resnet --batch_size 64 --inference 0 --dev 1 --loss CE --epochs 200 --device cuda

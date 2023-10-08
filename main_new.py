@@ -96,7 +96,7 @@ if __name__ == '__main__':
                 
                 train_dataset = EEGDataset(train_set, args)
                 val_dataset = EEGDataset(val_set, args)
-                test_dataset = EEGDataset(test_set, args)
+                test_dataset = EEGDataset(test_set,args)
                                 
                 train_loader = DataLoader(
                     dataset=train_dataset,

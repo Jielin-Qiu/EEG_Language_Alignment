@@ -1,0 +1,1 @@
+CUDA_VISIBLE_DEVICES=1 python main_new.py --dataset ZuCo --task SA --level sentence --modality fusion --model MLP --batch_size 1 --device cuda --checkpoint transformer_fusion_sentence_1_1_8_16_64_CE.chkpt --inference 1 --dev 0 --loss CE

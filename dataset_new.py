@@ -98,7 +98,6 @@ def prepare_sr_eeg_data(sr_eeg_data_path, sentence_list, labels_list, sentence_i
 
         for j in range(len(io_mat_file)):
           
-        
           t1 = io_mat_file[j].mean_t1[:104]
           t2 = io_mat_file[j].mean_t2[:104]
           
@@ -299,33 +298,26 @@ def clean_dic(eeg_dict):
       id_mapping[key] = new_key
       new_dict[new_key] = value
       count += 1
-
-  # Print the new dictionary and ID mapping
   
   return new_dict, id_mapping
 
 def shuffle_split_data(eeg_dict):
-    # Separate the keys based on the labels (-1, 0, 1)
     label_keys = defaultdict(list)
     for key, value in eeg_dict.items():
-        label = value['label']  # Assuming the label key is 'label' in the value dictionary
+        label = value['label']  
         label_keys[label].append(key)
 
-    # Shuffle the keys for each label
     for label in label_keys:
         random.shuffle(label_keys[label])
 
-    # Calculate the proportions for each set based on label counts
     label_counts = {label: len(label_keys[label]) for label in label_keys}
-    train_proportion = {label: int(0.7 * count) for label, count in label_counts.items()}
-    val_proportion = {label: int(0.15 * count) for label, count in label_counts.items()}
+    train_proportion = {label: int(0.8 * count) for label, count in label_counts.items()}
+    val_proportion = {label: int(0.10 * count) for label, count in label_counts.items()}
 
-    # Split the data dictionary
     train_data = {}
     val_data = {}
     test_data = {}
 
-    # Iterate over the shuffled keys and distribute the instances, maintaining equal distribution
     for label in label_keys:
         keys = label_keys[label]
         for i, key in tqdm(enumerate(keys), desc=f'Splitting Dictionary (Label: {label})'):
