@@ -4,7 +4,7 @@ from metrics import cal_statistic
 from sklearn.metrics import confusion_matrix
 from tqdm import tqdm
 import numpy as np
-from config import num_heads, num_layers
+
 
 def eval(valid_loader, device, model, total_num, args):
     all_labels = []
@@ -120,8 +120,8 @@ def inference(test_loader, device, model, total_num, args):
                 total_correct += n_correct
 
 
-    np.savetxt(f'pred_labels/{args.model}_{args.modality}_{args.level}_{num_layers}_{num_heads}_{args.batch_size}_all_pred.txt',all_pred)
-    np.savetxt(f'pred_labels/{args.model}_{args.modality}_{args.level}_{num_layers}_{num_heads}_{args.batch_size}_all_label.txt', all_labels)
+    np.savetxt(f'pred_labels/{args.model}_{args.modality}_{args.level}_{args.num_layers}_{args.num_heads}_{args.batch_size}_all_pred.txt',all_pred)
+    np.savetxt(f'pred_labels/{args.model}_{args.modality}_{args.level}_{args.num_layers}_{args.num_heads}_{args.batch_size}_all_label.txt', all_labels)
     all_pred = np.array(all_pred)
     cm = confusion_matrix(all_labels, all_res)
     print("test_cm:", cm)

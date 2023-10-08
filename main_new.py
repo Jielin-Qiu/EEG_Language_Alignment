@@ -9,8 +9,7 @@ import json
 from torch.utils.data import DataLoader
 import time
 
-from config import EEG_LEN, TEXT_LEN, d_model, d_inner, \
-    num_layers, num_heads, d_k, d_v, class_num, dropout
+from config import EEG_LEN, TEXT_LEN, d_model, d_inner, d_k, d_v, class_num, dropout
 from optim_new import ScheduledOptim, early_stopping
 from trainer import train
 from evaluator import eval, inference
@@ -40,7 +39,10 @@ def get_args():
     parser.add_argument('--checkpoint', type = str, default = None)
     parser.add_argument('--dev', type = int, default = 0)
     parser.add_argument('--loss', type = str, default = 'CE', help = "Please choose one of the following loss functions [CE, CCA, WD, CCAWD]")
-    
+    parser.add_argument('--num_layers', type = int, default = 1, help = 'Please choose how many layers the encoder should have')
+    parser.add_argument('--num_heads', type = int, default = 1, help = 'Please choose how many heads the encoder should have')
+    parser.add_argument('--dropout', type= float, default = 0.3, help = 'Please indicate the dropout proportion')
+    parser.add_argument('--text_llm', type=str, default = 'bert', help = 'Please choose which LLM to encode text')
     return parser.parse_args()
 
 
@@ -92,9 +94,9 @@ if __name__ == '__main__':
                 test_set, test_id_mapping = clean_dic(eeg_test_split)
                 
                 
-                train_dataset = EEGDataset(train_set)
-                val_dataset = EEGDataset(val_set)
-                test_dataset = EEGDataset(test_set)
+                train_dataset = EEGDataset(train_set, args)
+                val_dataset = EEGDataset(val_set, args)
+                test_dataset = EEGDataset(test_set, args)
                                 
                 train_loader = DataLoader(
                     dataset=train_dataset,
@@ -115,8 +117,8 @@ if __name__ == '__main__':
                 
                 if args.model == 'transformer':
                     model = Transformer(device = device, d_feature_text = TEXT_LEN, d_feature_eeg = EEG_LEN,\
-                                            d_model = d_model, d_inner = d_inner, n_layers = num_layers, \
-                                            n_head=num_heads, d_k = d_k, d_v = d_v, dropout= dropout, \
+                                            d_model = d_model, d_inner = d_inner, n_layers = args.num_layers, \
+                                            n_head=args.num_heads, d_k = d_k, d_v = d_v, dropout= dropout, \
                                             class_num = class_num, args = args)
                 model = model.to(device)
                     
@@ -165,7 +167,7 @@ if __name__ == '__main__':
                         
                         
                         if val_loss <= max(all_val_loss):
-                                torch.save(checkpoint, f'baselines/{args.model}_{args.modality}_{args.level}_{num_layers}_{num_heads}_{args.batch_size}_{args.loss}.chkpt')
+                                torch.save(checkpoint, f'baselines/{args.model}_{args.modality}_{args.level}_{args.num_layers}_{args.num_heads}_{args.batch_size}_{args.loss}.chkpt')
                                 print('    - [Info] The checkpoint file has been updated.')
                             
                         early_stop = early_stopping(all_val_loss, patience = 10, delta = 0.01)
@@ -175,7 +177,7 @@ if __name__ == '__main__':
                             break   
                     
                     plot_learning_curve(all_train_acc, all_train_loss, all_val_acc, all_val_loss, all_epochs, args)
-                    checkpoint = torch.load(f'baselines/{args.model}_{args.modality}_{args.level}_{num_layers}_{num_heads}_{args.batch_size}_{args.loss}.chkpt', map_location = 'cuda')
+                    checkpoint = torch.load(f'baselines/{args.model}_{args.modality}_{args.level}_{args.num_layers}_{args.num_heads}_{args.batch_size}_{args.loss}.chkpt', map_location = 'cuda')
                     model.load_state_dict(checkpoint['model'])
                     model = model.to(device)
                     inference(test_loader, device, model, test_dataset.__len__(), args)    

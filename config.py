@@ -4,8 +4,6 @@ device = torch.device('cuda')
 # device = torch.device('cpu')
 
 d_model = 16
-num_layers = 1
-num_heads = 1
 class_num = 3
 d_inner = 32
 dropout = 0.3

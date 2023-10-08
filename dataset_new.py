@@ -10,7 +10,7 @@ import math
 from tqdm import tqdm
 from scipy.stats import zscore
 import random
-from transformers import BertModel, BertTokenizer
+from transformers import BertModel, BertTokenizer, BertForSequenceClassification
 from collections import defaultdict
 
 
@@ -240,9 +240,14 @@ def prepare_sr_eeg_data(sr_eeg_data_path, sentence_list, labels_list, sentence_i
 
 
 class EEGDataset(Dataset):
-    def __init__(self, data):
+    def __init__(self, data, args):
         self.data = data
-        self.bert = BertModel.from_pretrained('bert-base-uncased')
+        self.args = args
+        if self.args.text_llm == 'bert':
+            self.bert = BertModel.from_pretrained('bert-base-uncased')
+        elif self.args.text_llm == 'seqbert':
+          self.bert = BertForSequenceClassification.from_pretrained('bert-base-uncased')
+          
         self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
 
     def __len__(self):

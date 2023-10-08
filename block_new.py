@@ -4,7 +4,6 @@ import torch.nn.functional as F
 import numpy as np
 from sublayer_new import MultiHeadAttention
 from config import PAD
-import scipy.stats as stats
 
 
 
