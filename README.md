@@ -42,29 +42,6 @@ Download ZuCo Dataset [here.](https://osf.io/q3zws/)
 
 For ZuCo Dataset, please only download task1 and task3.
 
-
-### Set up directories
-
-From the root directory, please create directories for results like so:
-```
-results
-  |-biLSTM_eeg
-  |-biLSTM_text
-  |-CCA_ds_eeg
-  |-CCA_ds_text
-  |-CCA_fusion_fusion
-  |-fusion_fusion
-  |-MLP_eeg
-  |-MLP_text
-  |-resnet_eeg
-  |-resnet_text
-  |-transformer_eeg
-  |-transformer_text
-  |-WD_ds_eeg
-  |-WD_ds_text
-  |-WD_fusion_fusion
-```
-
 ### Preprocessing data
 
 In the preprocessed folder, preprocessed data is readily available for usage. 
@@ -74,13 +51,13 @@ Preprocessing scripts are provided as well.
 
 ### Training 
 
-The `main.py` file is used for training selected models. Arguments are provided for selecting datasets, modalities, models, levels, and tasks. 
+The `main_new.py` file is used for training selected models. Arguments are provided for selecting datasets, modalities, models, levels, and tasks. 
 Please view the `config.py` file in tandem and customize it as necessary. 
 
 
 ### Plotting
 
-The `plot.py` file is used for plotting TSNE, alignment, and brain topological figures. Arguments are also provided for selecting datasets, modalities, models, levels, tasks, and types of plots. 
+The `plot.py` file is used for plotting TSNE, alignment, and brain topological figures. Arguments are also provided for selecting datasets, modalities, models, levels, tasks, and types of plots. Additionally, `plot_new.py` is used to plot the learning curves. 
 
 
 ### Citation
