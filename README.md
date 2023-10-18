@@ -45,7 +45,7 @@ For ZuCo Dataset, please only download task1 and task3.
 ### Preprocessing data
 
 In the preprocessed folder, preprocessed data is readily available for usage. 
-For K-EmoCon, df.csv is used. For ZuCo sentiment analysis and relation detection, respective csv's for sentence-level, word-level, and concat word-level are provided. 
+For K-EmoCon, df.csv is used. For ZuCo sentiment analysis, we provide the sentence-level csv in the preprocessed folder.
 
 Preprocessing scripts are provided as well. 
 
