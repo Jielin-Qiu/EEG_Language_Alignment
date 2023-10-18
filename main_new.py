@@ -8,6 +8,7 @@ from torch.optim import Adam
 import json
 from torch.utils.data import DataLoader
 import time
+from transformers import BertModel, BertTokenizer
 
 from config import EEG_LEN, TEXT_LEN, d_model, d_inner, d_k, d_v, class_num, dropout
 from optim_new import ScheduledOptim, early_stopping
@@ -43,6 +44,9 @@ def get_args():
     parser.add_argument('--num_heads', type = int, default = 1, help = 'Please choose how many heads the encoder should have')
     parser.add_argument('--dropout', type= float, default = 0.3, help = 'Please indicate the dropout proportion')
     parser.add_argument('--text_llm', type=str, default = 'bert', help = 'Please choose which LLM to encode text')
+    parser.add_argument('--ce_weight', type = float, default = 1, help = 'Please choose the ce loss weight')
+    parser.add_argument('--cca_weight', type = float, default = 1, help = 'Please choose the cca loss weight')
+    parser.add_argument('--wd_weight', type = float, default = 1, help = 'Please choose the wd loss weight')
     return parser.parse_args()
 
 
@@ -113,6 +117,7 @@ if __name__ == '__main__':
                     dataset=test_dataset,
                     batch_size=args.batch_size,
                     shuffle=False,
+                    drop_last = True
                 )
                 
                 if args.model == 'transformer':
@@ -120,8 +125,14 @@ if __name__ == '__main__':
                                             d_model = d_model, d_inner = d_inner, n_layers = args.num_layers, \
                                             n_head=args.num_heads, d_k = d_k, d_v = d_v, dropout= dropout, \
                                             class_num = class_num, args = args)
-                model = model.to(device)
+                elif args.model == 'bert':
+                    tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
+                    model = BertModel.from_pretrained("bert-base-uncased")
                     
+                model = model.to(device)
+                
+                torch.manual_seed(2)
+                
                 optimizer = ScheduledOptim(
                     Adam(filter(lambda x: x.requires_grad, model.parameters()), 
                          betas = (0.9, 0.98), eps = args.eps, lr = args.lr, weight_decay = args.weight_decay),
@@ -167,7 +178,7 @@ if __name__ == '__main__':
                         
                         
                         if val_loss <= max(all_val_loss):
-                                torch.save(checkpoint, f'baselines/{args.model}_{args.modality}_{args.level}_{args.num_layers}_{args.num_heads}_{args.batch_size}_{args.loss}.chkpt')
+                                torch.save(checkpoint, f'baselines/{args.model}_{args.modality}_{args.level}_{args.num_layers}_{args.num_heads}_{args.batch_size}_{args.loss}_{args.ce_weight}_{args.cca_weight}_{args.wd_weight}.chkpt')
                                 print('    - [Info] The checkpoint file has been updated.')
                             
                         early_stop = early_stopping(all_val_loss, patience = 10, delta = 0.01)
@@ -177,7 +188,7 @@ if __name__ == '__main__':
                             break   
                     
                     plot_learning_curve(all_train_acc, all_train_loss, all_val_acc, all_val_loss, all_epochs, args)
-                    checkpoint = torch.load(f'baselines/{args.model}_{args.modality}_{args.level}_{args.num_layers}_{args.num_heads}_{args.batch_size}_{args.loss}.chkpt', map_location = 'cuda')
+                    checkpoint = torch.load(f'baselines/{args.model}_{args.modality}_{args.level}_{args.num_layers}_{args.num_heads}_{args.batch_size}_{args.loss}_{args.ce_weight}_{args.cca_weight}_{args.wd_weight}.chkpt', map_location = 'cuda')
                     model.load_state_dict(checkpoint['model'])
                     model = model.to(device)
                     inference(test_loader, device, model, test_dataset.__len__(), args)    

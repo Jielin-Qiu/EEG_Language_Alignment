@@ -47,7 +47,20 @@ def train(train_loader, device, model, optimizer, total_num, args):
             total_loss += loss.item()
             total_correct += n_correct
             cm = confusion_matrix(all_labels, all_res)
+            
         elif args.modality == 'fusion' and args.model == 'transformer':
+            pred, eeg_embed, text_embed = model(eeg_src_seq = eeg, text_src_seq = text)
+            all_labels.extend(label.cpu().numpy())
+            all_res.extend(pred.max(1)[1].cpu().numpy())
+            loss, n_correct = cal_loss(label, args, pred = pred, text_embed = text_embed, eeg_embed = eeg_embed)
+            all_pred.extend(pred.cpu().detach().numpy())
+            loss.backward()
+            optimizer.step_and_update_lr()
+
+            total_loss += loss.item()
+            total_correct += n_correct
+            
+        elif args.modality == 'fusion' and args.model == 'bert':
             pred, eeg_embed, text_embed = model(eeg_src_seq = eeg, text_src_seq = text)
             all_labels.extend(label.cpu().numpy())
             all_res.extend(pred.max(1)[1].cpu().numpy())

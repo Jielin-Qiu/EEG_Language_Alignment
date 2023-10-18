@@ -255,19 +255,23 @@ class EEGDataset(Dataset):
     def __getembed__(self, text):
       tokenized = self.tokenizer(text, padding=True, truncation=True, return_tensors='pt')
       input_ids = tokenized['input_ids']
-      with torch.no_grad():
-          outputs = self.bert(input_ids)
-          embeddings = outputs.last_hidden_state.mean(dim=1).squeeze().numpy()
-      
-      embeddings = zscore(embeddings)
-      
-      assert embeddings.shape == (768,)
-      
-      return torch.tensor(embeddings, dtype = torch.float32)
+      if self.args.model == 'transformer':
+        with torch.no_grad():
+            outputs = self.bert(input_ids)
+            embeddings = outputs.last_hidden_state.mean(dim=1).squeeze().numpy()
+        
+        embeddings = zscore(embeddings)
+        
+        assert embeddings.shape == (768,)
+        
+        return torch.tensor(embeddings, dtype = torch.float32)
+      elif self.args.model == 'bert':
+        return input_ids
       
     def __getitem__(self, idx):
         item = self.data[idx]
-        embeddings = self.__getembed__(item['sentence'])
+        if self.args.model == 'transformer':
+          embeddings = self.__getembed__(item['sentence'])
         
         sample = {
             'label': torch.tensor(item['label'], dtype=torch.long),
@@ -311,7 +315,7 @@ def shuffle_split_data(eeg_dict):
         random.shuffle(label_keys[label])
 
     label_counts = {label: len(label_keys[label]) for label in label_keys}
-    train_proportion = {label: int(0.8 * count) for label, count in label_counts.items()}
+    train_proportion = {label: int(0.6 * count) for label, count in label_counts.items()}
     val_proportion = {label: int(0.10 * count) for label, count in label_counts.items()}
 
     train_data = {}

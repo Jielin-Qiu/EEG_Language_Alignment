@@ -29,6 +29,7 @@ class cca_loss():
         m = H1.size(1)
 
 
+
         H1bar = H1 - H1.mean(dim=1).unsqueeze(dim=1)
         H2bar = H2 - H2.mean(dim=1).unsqueeze(dim=1)
 
@@ -94,19 +95,19 @@ def cal_loss(label, args, pred=None, text_embed=None, eeg_embed=None):
     loss = None
     n_correct = None
     
-    loss = F.cross_entropy(pred, label, reduction='sum')
+    loss = args.ce_weight * F.cross_entropy(pred, label, reduction='sum')
     pred = pred.max(1)[1]
     n_correct = pred.eq(label).sum().item()
     
     if args.loss == 'CE':
         return loss, n_correct
     elif args.loss == 'CCA' and args.modality == 'fusion':
-        loss = loss + cca.loss(text_embed, eeg_embed)
+        loss = loss + args.cca_weight * cca.loss(text_embed, eeg_embed)
         return loss, n_correct
     elif args.loss == 'WD' and args.modality == 'fusion':
-        loss = loss + torch.tensor(wasserstein_distance(text_embed.cpu().detach().numpy().flatten(), eeg_embed.cpu().detach().numpy().flatten()), requires_grad=True)
+        loss = loss + args.wd_weight * torch.tensor(wasserstein_distance(text_embed.cpu().detach().numpy().flatten(), eeg_embed.cpu().detach().numpy().flatten()), requires_grad=True)
         return loss, n_correct
     elif args.loss == 'CCAWD' and args.modality == 'fusion':
-        loss = loss + cca.loss(text_embed, eeg_embed)
-        loss = loss + torch.tensor(wasserstein_distance(text_embed.cpu().detach().numpy().flatten(), eeg_embed.cpu().detach().numpy().flatten()), requires_grad=True)
+        loss = loss + args.cca_weight * cca.loss(text_embed, eeg_embed)
+        loss = loss + args.wd_weight * torch.tensor(wasserstein_distance(text_embed.cpu().detach().numpy().flatten(), eeg_embed.cpu().detach().numpy().flatten()), requires_grad=True)
         return loss, n_correct    
