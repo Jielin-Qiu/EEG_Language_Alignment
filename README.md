@@ -1,4 +1,6 @@
-## [Can Brain Signals Reveal Inner Alignment with Human Languages?](https://arxiv.org/abs/2208.06348)
+## Can Brain Signals Reveal Inner Alignment with Human Languages?
+Code for our paper [Can Brain Signals Reveal Inner Alignment with Human Languages?](https://arxiv.org/abs/2208.06348).
+This is a joint work with William Han, Jielin Qiu, Jiacheng Zhu, Mengdi Xu, Douglas Weber, Bo Li, and Ding Zhao.
 
 ## Usage
 
