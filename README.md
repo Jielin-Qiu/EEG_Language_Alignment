@@ -1,20 +1,4 @@
-## EEG_Language_Alignment
-
-An Empirical Exploration of Cross-domain Alignment between Language and Electroencephalogram
-
-## Citation
-
-If you feel our code or models helps in your research, kindly cite our papers:
-
-```
-@article{Han2022AnEE,
-  title={An Empirical Exploration of Cross-domain Alignment between Language and Electroencephalogram},
-  author={William Han and Jielin Qiu and Jiacheng Zhu and Mengdi Xu and Douglas Weber and Bo Li and Ding Zhao},
-  journal={ArXiv},
-  year={2022},
-  volume={abs/2208.06348}
-}
-```
+## [Can Brain Signals Reveal Inner Alignment with Human Languages?](https://arxiv.org/abs/2208.06348)
 
 ## Usage
 
@@ -63,15 +47,14 @@ The `plot.py` file is used for plotting TSNE, alignment, and brain topological f
 ### Citation
 
 ```
-@article{han_2022_an,
-	author = {Han, William and Qiu, Jielin and Zhu, Jiacheng and Xu, Mengdi and Weber, Douglas and Li, Bo and Zhao, Ding},
-	journal = {arXiv:2208.06348 [cs, q-bio]},
-	month = {08},
-	title = {An Empirical Exploration of Cross-domain Alignment between Language and Electroencephalogram},
-	url = {https://arxiv.org/abs/2208.06348},
-	urldate = {2022-08-17},
-	year = {2022},
-	bdsk-url-1 = {https://arxiv.org/abs/2208.06348}}
+@misc{han2023brain,
+      title={Can Brain Signals Reveal Inner Alignment with Human Languages?}, 
+      author={William Han and Jielin Qiu and Jiacheng Zhu and Mengdi Xu and Douglas Weber and Bo Li and Ding Zhao},
+      year={2023},
+      eprint={2208.06348},
+      archivePrefix={arXiv},
+      primaryClass={q-bio.NC}
+}
 ```
 
 ### Contact
