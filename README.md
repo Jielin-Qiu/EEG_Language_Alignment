@@ -1,5 +1,6 @@
 ## Can Brain Signals Reveal Inner Alignment with Human Languages?
 Code for our paper [Can Brain Signals Reveal Inner Alignment with Human Languages?](https://arxiv.org/abs/2208.06348).
+
 In EMNLP Findings 2023.
 
 ## Usage
